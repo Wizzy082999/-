@@ -15,7 +15,17 @@ export const INITIAL_CHAPTERS: Chapter[] = [
     heroSubtitle: '收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️',
     weather: 'snow',
     decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
-    posts: []
+    posts: [
+      {
+        id: 'sample-post-1',
+        title: '文件夹创建成功！',
+        date: '2023-12-25',
+        content: '当你看到这张圣诞树图片时，说明 public/images 文件夹已经自动创建好啦！\n\n以后你只需要把照片上传到这个文件夹，然后路径填 "/images/你的照片名.jpg" 就可以永久保存了。',
+        mediaUrl: '/images/sample.svg',
+        mediaType: 'image',
+        likes: 99
+      }
+    ]
   }
 ];
 

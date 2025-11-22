@@ -527,7 +527,7 @@ const App: React.FC = () => {
                         setMode('viewer');
                         alert("已进入纯净预览模式。\n（提示：如需重新编辑，请连续点击左上角红色爱心 5 次）");
                     }}
-                    className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full shadow-lg transition-colors ml-2"
+                    className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full shadow-colors transition-colors ml-2"
                     title="退出编辑/预览最终效果"
                 >
                     <EyeOff size={20} />
@@ -686,8 +686,10 @@ const App: React.FC = () => {
                             <span>方案一：永久保存 (推荐) ❤️</span>
                         </div>
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-                            1. 必须手动将图片上传到 GitHub 项目的 <code className="bg-white px-1 rounded border">public/images</code> 文件夹。<br/>
-                            2. 上传后，在下方填写文件路径 (例如: <code className="text-green-600">/images/love.jpg</code>)。
+                           GitHub 操作技巧：<br/>
+                           点击 "Add file" -> "Create new file"。<br/>
+                           在文件名处输入：<span className="text-red-500 font-bold">public/images/你的照片名.jpg</span><br/>
+                           (注意输入斜杠 / 会自动创建文件夹！)
                         </p>
                         <input 
                             type="text"
@@ -696,7 +698,7 @@ const App: React.FC = () => {
                                 setNewPostMediaUrlInput(e.target.value);
                                 setNewPostMedia(null); // Clear file if manual URL is used
                             }}
-                            placeholder="/images/your-photo.jpg"
+                            placeholder="/images/sample.svg"
                             className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
                         />
                      </div>
