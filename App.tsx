@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -676,30 +676,19 @@ const App: React.FC = () => {
 
               {/* Enhanced Image Input Section for Deployment */}
               <div>
-                 <label className="block text-sm font-bold text-gray-600 mb-2">图片/视频来源</label>
-                 <div className="space-y-3">
-                     {/* Option A: File Upload (Good for testing/local, bad for deployed unless file exists in public) */}
-                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-3 hover:border-christmas-gold transition-colors cursor-pointer relative group flex items-center gap-3 bg-gray-50">
-                        <div className="bg-gray-200 p-2 rounded-full">
-                            <Upload size={20} className="text-gray-500" />
+                 <label className="block text-sm font-bold text-gray-600 mb-2">图片/视频来源 (二选一)</label>
+                 
+                 <div className="space-y-4">
+                     {/* Permanent Path Option (Highlighted) */}
+                     <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2 text-green-800 font-bold text-sm">
+                            <Upload size={16} />
+                            <span>方案一：永久保存 (推荐) ❤️</span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                             <span className="text-sm font-medium text-gray-700 block truncate">
-                                {newPostMedia ? newPostMedia.name : "点击上传本地文件 (用于预览)"}
-                             </span>
-                             <input 
-                                type="file" 
-                                accept="image/*,video/*"
-                                onChange={(e) => handleFileChange(e, 'media')}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            />
-                        </div>
-                     </div>
-
-                     <div className="text-center text-xs text-gray-400 font-bold">OR</div>
-
-                     {/* Option B: URL Input (Best for deployment) */}
-                     <div>
+                        <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                            1. 必须手动将图片上传到 GitHub 项目的 <code className="bg-white px-1 rounded border">public/images</code> 文件夹。<br/>
+                            2. 上传后，在下方填写文件路径 (例如: <code className="text-green-600">/images/love.jpg</code>)。
+                        </p>
                         <input 
                             type="text"
                             value={newPostMediaUrlInput}
@@ -707,12 +696,43 @@ const App: React.FC = () => {
                                 setNewPostMediaUrlInput(e.target.value);
                                 setNewPostMedia(null); // Clear file if manual URL is used
                             }}
-                            placeholder="输入图片链接 (例如: /images/photo1.jpg 或 https://...)"
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-christmas-green outline-none"
+                            placeholder="/images/your-photo.jpg"
+                            className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                           💡 部署提示: 将照片放入项目 <code className="bg-gray-100 px-1 rounded">public/images</code> 文件夹，然后在此输入 <code className="bg-gray-100 px-1 rounded">/images/文件名.jpg</code>
-                        </p>
+                     </div>
+
+                     <div className="relative flex py-1 items-center">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">或者 (本地测试用)</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                     </div>
+
+                     {/* Temporary Upload Option */}
+                     <div className={`border-2 border-dashed rounded-xl p-3 transition-colors relative group flex items-center gap-3 ${newPostMedia ? 'border-christmas-gold bg-yellow-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                        <div className="bg-gray-200 p-2 rounded-full shrink-0">
+                            <Upload size={20} className="text-gray-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                             <span className="text-sm font-medium text-gray-700 block truncate">
+                                {newPostMedia ? newPostMedia.name : "方案二：从电脑上传 (临时预览)"}
+                             </span>
+                             <p className="text-xs text-red-400 mt-0.5">⚠️ 注意：刷新页面后图片会消失！</p>
+                             <input 
+                                type="file" 
+                                accept="image/*,video/*"
+                                onChange={(e) => handleFileChange(e, 'media')}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                        </div>
+                        {newPostMedia && (
+                            <button 
+                                type="button"
+                                onClick={() => setNewPostMedia(null)}
+                                className="p-1 text-gray-400 hover:text-red-500 z-10"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
                      </div>
                  </div>
               </div>
@@ -760,9 +780,10 @@ const App: React.FC = () => {
                      />
                      <Music className="text-gray-400" size={20} />
                      <span className="text-sm text-gray-500 flex-1 truncate">
-                       {chapterFormBGM ? chapterFormBGM.name : "点击上传 MP3"}
+                       {chapterFormBGM ? chapterFormBGM.name : "点击上传 MP3 (同样刷新会消失)"}
                      </span>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">提示：BGM 最好也放到 public 文件夹并手动修改代码路径。</p>
                </div>
 
                <div className="flex gap-3 mt-6">
