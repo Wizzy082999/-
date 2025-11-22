@@ -1,6 +1,64 @@
-import React, { useState, useRef } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, AlertCircle } from 'lucide-react';
+
+// --- SafeImage Component (The Diagnostic Detective) ---
+interface SafeImageProps {
+  src: string;
+  alt: string;
+}
+
+const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
+  const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
+  
+  useEffect(() => {
+    // Reset status when src changes
+    setStatus('loading');
+  }, [src]);
+
+  if (status === 'error') {
+    return (
+      <div className="w-full bg-gray-900 border border-red-500/50 rounded-lg p-6 flex flex-col items-center text-center gap-3">
+        <div className="bg-red-500/20 p-3 rounded-full">
+           <ImageOff className="text-red-400" size={32} />
+        </div>
+        <h4 className="text-red-300 font-bold font-sans">图片加载失败 (404)</h4>
+        
+        <div className="bg-black/50 p-3 rounded text-xs font-mono text-gray-300 w-full break-all border border-white/10">
+           请求路径: <span className="text-yellow-400">{src}</span>
+        </div>
+
+        <div className="text-sm text-gray-400 text-left space-y-2 bg-white/5 p-3 rounded w-full">
+          <p className="font-bold text-white">排查建议：</p>
+          <ul className="list-disc list-inside space-y-1">
+             <li>检查 GitHub 里是否有 <code className="bg-gray-700 px-1 rounded">public{src}</code> 这个文件。</li>
+             <li><strong>大小写敏感！</strong> <code className="text-yellow-300">Photo.jpg</code> 和 <code className="text-yellow-300">photo.jpg</code> 是不一样的。</li>
+             <li>文件是否在 <code className="bg-gray-700 px-1 rounded">public</code> 文件夹内？</li>
+             <li>路径不需要包含 'public'。例如应填 <code className="text-green-400">/images/a.jpg</code> 而不是 <code className="text-red-400">/public/images/a.jpg</code>。</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full flex justify-center">
+      {status === 'loading' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 h-[200px]">
+          <Loader2 className="animate-spin text-christmas-gold" size={32} />
+        </div>
+      )}
+      <img 
+        src={src} 
+        alt={alt} 
+        className={`max-w-full max-h-[80vh] object-contain w-auto h-auto rounded-lg transition-opacity duration-300 ${status === 'loading' ? 'opacity-0' : 'opacity-100'}`}
+        onLoad={() => setStatus('success')}
+        onError={() => setStatus('error')}
+      />
+    </div>
+  );
+};
 
 interface PostCardProps {
   post: MemoryPost;
@@ -8,7 +66,7 @@ interface PostCardProps {
   onLikePost: (postId: string) => void;
   onDeletePost?: (postId: string) => void;
   onUpdatePost?: (postId: string, data: Partial<MemoryPost>) => void;
-  onTriggerEasterEgg: () => void; // New prop for the 23 clicks
+  onTriggerEasterEgg: () => void; 
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ 
@@ -31,24 +89,19 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [editContent, setEditContent] = useState(post.content);
 
   const handleLikeClick = () => {
-    // Standard like action
     onLikePost(post.id);
 
-    // Easter Egg Logic
     clickCountRef.current += 1;
-
-    // If they stop clicking for 2 seconds, reset the counter (optional, keeps it "consecutive")
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
     }
-    
     clickTimeoutRef.current = setTimeout(() => {
       clickCountRef.current = 0;
     }, 2000);
 
     if (clickCountRef.current === 23) {
       onTriggerEasterEgg();
-      clickCountRef.current = 0; // Reset after triggering
+      clickCountRef.current = 0; 
     }
   };
 
@@ -100,7 +153,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        {/* Controls (Edit, Delete) - Only visible in Editor Mode */}
+        {/* Controls */}
         {mode === 'editor' && (
           <div className="flex items-center gap-2 shrink-0 bg-black/20 p-1 rounded-lg backdrop-blur-md z-50">
               {isEditing ? (
@@ -130,13 +183,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </button>
               )}
               
-              {/* Delete Button - Always Red, Always Visible in Editor Mode */}
               {onDeletePost && (
                 <button 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    // Call delete directly
                     onDeletePost(post.id);
                   }}
                   className="p-2 rounded hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer relative z-50"
@@ -150,17 +201,13 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      {/* Media - Adaptive Size Fix - Only render if URL exists */}
+      {/* Media Section with Error Handling */}
       {post.mediaUrl && (
-        <div className="w-full bg-black/20 flex justify-center items-center min-h-[200px]">
+        <div className="w-full bg-black/20 flex justify-center items-center min-h-[200px] p-2">
           {post.mediaType === 'video' ? (
-            <video src={post.mediaUrl} controls className="w-full h-auto max-h-[80vh]" />
+            <video src={post.mediaUrl} controls className="w-full h-auto max-h-[80vh] rounded" />
           ) : (
-            <img 
-              src={post.mediaUrl} 
-              alt={post.title} 
-              className="max-w-full max-h-[80vh] object-contain w-auto h-auto" 
-            />
+            <SafeImage src={post.mediaUrl} alt={post.title} />
           )}
         </div>
       )}
@@ -179,7 +226,6 @@ export const PostCard: React.FC<PostCardProps> = ({
           <p className="text-lg leading-relaxed font-sans mb-6 whitespace-pre-wrap text-gray-100">{post.content}</p>
         )}
         
-        {/* Likes Only Bar */}
         <div className="flex items-center justify-end border-t border-white/10 pt-4">
           <button 
             onClick={handleLikeClick}

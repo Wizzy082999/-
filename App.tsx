@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { WeatherLayer } from './components/WeatherLayer';
 import { DraggableDecoration } from './components/DraggableDecoration';
@@ -277,7 +276,18 @@ const App: React.FC = () => {
     if (!currentChapter) return;
     
     // Priority: Manual URL (stable) > Uploaded File (temporary Blob)
-    let mediaUrl = newPostMediaUrlInput;
+    let mediaUrl = newPostMediaUrlInput.trim();
+    
+    // --- AUTO FIX LOGIC ---
+    // If user entered "public/images/foo.jpg", fix it to "/images/foo.jpg"
+    if (mediaUrl.startsWith('public/')) {
+        mediaUrl = '/' + mediaUrl.replace('public/', '');
+    }
+    // Ensure it starts with / if it's a local path (not http)
+    if (mediaUrl && !mediaUrl.startsWith('http') && !mediaUrl.startsWith('/')) {
+        mediaUrl = '/' + mediaUrl;
+    }
+
     if (!mediaUrl && newPostMedia) {
         mediaUrl = URL.createObjectURL(newPostMedia);
     }
