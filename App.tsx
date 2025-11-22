@@ -6,11 +6,22 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Image as ImageIcon, Video, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [mode, setMode] = useState<AppMode>('editor');
+  // Mode State
+  // 🎄 默认为 'viewer' (浏览模式)，给她看的时候是纯净的
+  const [mode, setMode] = useState<AppMode>('viewer');
   
+  // Admin State - Default to FALSE. 
+  // Click the heart icon 5 times to unlock admin features.
+  const [isAdmin, setIsAdmin] = useState(false); 
+  
+  const [adminUnlockCount, setAdminUnlockCount] = useState(0);
+  
+  // Easter Egg State
+  const [giantHeartVisible, setGiantHeartVisible] = useState(false);
+
   // State: Chapters
   // Initialize from localStorage if available to prevent data loss on refresh
   const [chapters, setChapters] = useState<Chapter[]>(() => {
@@ -113,6 +124,28 @@ const App: React.FC = () => {
     }
   }, [isMuted, currentChapter?.bgmUrl]);
 
+  // --- Unlock Admin ---
+  const handleUnlockAdmin = () => {
+      if (isAdmin) return; // Already unlocked
+      
+      const newCount = adminUnlockCount + 1;
+      setAdminUnlockCount(newCount);
+      
+      if (newCount === 5) {
+          setIsAdmin(true);
+          setMode('editor');
+          setAdminUnlockCount(0); // Reset counter
+          alert("管理员模式已解锁！❤️\n欢迎回来，开始编辑吧！");
+      }
+  };
+
+  // --- Trigger Giant Heart ---
+  const triggerGiantHeart = () => {
+      setGiantHeartVisible(true);
+      setTimeout(() => {
+          setGiantHeartVisible(false);
+      }, 3000); // Show for 3 seconds
+  };
 
   // --- Actions ---
 
@@ -177,27 +210,6 @@ const App: React.FC = () => {
 
   const handleWeatherChange = (w: WeatherType) => {
     updateChapter(currentChapterId, { weather: w });
-  };
-
-  const handleAddComment = (postId: string, text: string) => {
-    if (!currentChapter) return;
-    const newComment = {
-      id: Date.now().toString() + Math.random(),
-      author: '她',
-      text,
-      date: new Date().toISOString().split('T')[0]
-    };
-    
-    setChapters(prev => prev.map(c => {
-      const postExists = c.posts.find(p => p.id === postId);
-      if (postExists) {
-        return {
-          ...c,
-          posts: c.posts.map(p => p.id === postId ? { ...p, comments: [...p.comments, newComment] } : p)
-        };
-      }
-      return c;
-    }));
   };
 
   const handleLikePost = (postId: string) => {
@@ -277,8 +289,7 @@ const App: React.FC = () => {
       date: newPostDate || new Date().toISOString().split('T')[0],
       mediaUrl: mediaUrl || undefined,
       mediaType: newPostMediaType,
-      likes: 0,
-      comments: []
+      likes: 0
     };
 
     setChapters(prev => prev.map(c => {
@@ -380,6 +391,15 @@ const App: React.FC = () => {
         />
       ))}
 
+      {/* Giant Heart Easter Egg Overlay */}
+      {giantHeartVisible && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none animate-scale-in">
+             <div className="text-[15rem] drop-shadow-[0_0_50px_rgba(255,0,0,0.8)] animate-pulse">
+                 ❤️
+             </div>
+          </div>
+      )}
+
       <div className="relative z-20 h-screen overflow-y-auto overflow-x-hidden flex flex-col">
         
         {/* Header */}
@@ -387,8 +407,12 @@ const App: React.FC = () => {
           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             
             <div className="flex items-center gap-4 w-full md:w-auto justify-between">
-              <div className="flex items-center gap-2">
-                 <div className="bg-christmas-gold p-2 rounded-full shadow-lg animate-pulse">
+              <div className="flex items-center gap-2 select-none">
+                 <div 
+                    className="bg-christmas-gold p-2 rounded-full shadow-lg animate-pulse cursor-pointer active:scale-90 transition-transform"
+                    onClick={handleUnlockAdmin}
+                    title={isAdmin ? "管理员模式已开启" : "点击 5 次解锁编辑模式"}
+                 >
                   <Heart className="text-red-600 fill-current" size={24} />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-cute text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">一本喵书📖</h1>
@@ -421,7 +445,7 @@ const App: React.FC = () => {
                         {chapter.title}
                       </button>
 
-                      {mode === 'editor' && currentChapterId === chapter.id && (
+                      {isAdmin && mode === 'editor' && currentChapterId === chapter.id && (
                         <div className="flex gap-1 ml-1 bg-black/60 backdrop-blur-md rounded-md p-1 border border-white/20 shadow-xl z-50 relative">
                            <button 
                               onClick={(e) => { 
@@ -447,7 +471,7 @@ const App: React.FC = () => {
                       )}
                     </div>
                   ))}
-                  {mode === 'editor' && (
+                  {isAdmin && mode === 'editor' && (
                     <button 
                       onClick={openCreateChapterModal}
                       className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-dashed border-white/40 text-white/70 flex items-center gap-1 text-sm shrink-0 transition-colors"
@@ -458,44 +482,58 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* Mode Switcher & Settings */}
-            <div className="flex gap-2 items-center shrink-0">
-              {/* NEW: Export Button */}
-              {mode === 'editor' && (
-                  <button 
-                    onClick={handleExportData}
-                    className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3 mr-2"
-                    title="导出数据以便部署"
-                  >
-                    <Download size={16} />
-                    <span className="text-xs font-bold hidden md:inline">保存代码</span>
-                  </button>
-              )}
+            {/* Mode Switcher & Settings - ONLY VISIBLE IF ADMIN */}
+            {isAdmin && (
+              <div className="flex gap-2 items-center shrink-0 animate-fade-in">
+                {mode === 'editor' && (
+                    <button 
+                      onClick={handleExportData}
+                      className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3 mr-2"
+                      title="导出数据以便部署"
+                    >
+                      <Download size={16} />
+                      <span className="text-xs font-bold hidden md:inline">保存代码</span>
+                    </button>
+                )}
 
-              <div className="bg-black/60 backdrop-blur-md rounded-full p-1 flex border border-white/10">
+                <div className="bg-black/60 backdrop-blur-md rounded-full p-1 flex border border-white/10">
+                  <button 
+                    onClick={() => setMode('viewer')}
+                    className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'viewer' ? 'bg-blue-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    浏览
+                  </button>
+                  <button 
+                    onClick={() => setMode('editor')}
+                    className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'editor' ? 'bg-christmas-gold text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    编辑
+                  </button>
+                </div>
+                {mode === 'editor' && (
+                  <button 
+                    onClick={() => setIsDIYPanelOpen(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-transform hover:scale-110"
+                    title="本章环境设置"
+                  >
+                    <Settings size={20} />
+                  </button>
+                )}
+
+                {/* Lock / Preview Button */}
                 <button 
-                  onClick={() => setMode('viewer')}
-                  className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'viewer' ? 'bg-blue-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    onClick={() => {
+                        setIsAdmin(false);
+                        setMode('viewer');
+                        alert("已进入纯净预览模式。\n（提示：如需重新编辑，请连续点击左上角红色爱心 5 次）");
+                    }}
+                    className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full shadow-lg transition-colors ml-2"
+                    title="退出编辑/预览最终效果"
                 >
-                  浏览
-                </button>
-                <button 
-                  onClick={() => setMode('editor')}
-                  className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'editor' ? 'bg-christmas-gold text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-                >
-                  编辑
+                    <EyeOff size={20} />
                 </button>
               </div>
-              {mode === 'editor' && (
-                <button 
-                  onClick={() => setIsDIYPanelOpen(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-transform hover:scale-110"
-                  title="本章环境设置"
-                >
-                  <Settings size={20} />
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </header>
 
@@ -505,7 +543,7 @@ const App: React.FC = () => {
               <h2 className="text-5xl md:text-7xl font-cute text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-christmas-gold to-yellow-200 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse select-none">
                 {displayHeroTitle}
               </h2>
-              {mode === 'editor' && (
+              {isAdmin && mode === 'editor' && (
                 <button 
                   onClick={() => setIsEditingHero(true)}
                   className="absolute -top-2 -right-6 bg-white/10 hover:bg-white/30 text-white p-1.5 rounded-full backdrop-blur-sm transition-all border border-white/20 opacity-50 group-hover:opacity-100"
@@ -544,10 +582,10 @@ const App: React.FC = () => {
                 key={post.id} 
                 post={post} 
                 mode={mode} 
-                onAddComment={handleAddComment} 
                 onDeletePost={handleDeletePostRequest}
                 onLikePost={handleLikePost}
                 onUpdatePost={handleUpdatePost}
+                onTriggerEasterEgg={triggerGiantHeart}
               />
             ))
           ) : (
@@ -555,7 +593,7 @@ const App: React.FC = () => {
               <BookOpen size={64} className="text-white/20 mb-4" />
               <h3 className="text-2xl font-cute mb-2">本篇章还是空的</h3>
               <p className="mb-6 text-gray-400">开始书写属于这一章的故事吧。</p>
-              {mode === 'editor' && (
+              {isAdmin && mode === 'editor' && (
                 <button 
                   onClick={() => setIsPostModalOpen(true)}
                   className="bg-christmas-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition-colors shadow-lg"
@@ -566,7 +604,7 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {mode === 'editor' && (
+          {isAdmin && mode === 'editor' && (
             <div className="fixed bottom-10 right-6 z-40 flex flex-col gap-4 items-end">
                <button 
                 onClick={() => setIsPostModalOpen(true)}

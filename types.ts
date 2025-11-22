@@ -12,13 +12,6 @@ export interface Decoration {
   visible: boolean; // Keep for compatibility, though we mostly use add/remove now
 }
 
-export interface Comment {
-  id: string;
-  author: string;
-  text: string;
-  date: string;
-}
-
 export interface MemoryPost {
   id: string;
   title: string;
@@ -27,7 +20,7 @@ export interface MemoryPost {
   mediaUrl?: string; // Optional now
   mediaType: 'image' | 'video';
   likes: number;
-  comments: Comment[];
+  // Comments removed as requested
 }
 
 export interface Chapter {

@@ -1,38 +1,54 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, MessageCircle, Trash2, Edit3, Save, X, Send } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface PostCardProps {
   post: MemoryPost;
   mode: AppMode;
-  onAddComment: (postId: string, text: string) => void;
   onLikePost: (postId: string) => void;
   onDeletePost?: (postId: string) => void;
   onUpdatePost?: (postId: string, data: Partial<MemoryPost>) => void;
+  onTriggerEasterEgg: () => void; // New prop for the 23 clicks
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ 
   post, 
   mode, 
-  onAddComment, 
   onLikePost, 
   onDeletePost,
-  onUpdatePost 
+  onUpdatePost,
+  onTriggerEasterEgg
 }) => {
-  const [newComment, setNewComment] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Easter egg state
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Editing State
   const [editTitle, setEditTitle] = useState(post.title);
   const [editDate, setEditDate] = useState(post.date);
   const [editContent, setEditContent] = useState(post.content);
 
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      onAddComment(post.id, newComment);
-      setNewComment('');
+  const handleLikeClick = () => {
+    // Standard like action
+    onLikePost(post.id);
+
+    // Easter Egg Logic
+    clickCountRef.current += 1;
+
+    // If they stop clicking for 2 seconds, reset the counter (optional, keeps it "consecutive")
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+    
+    clickTimeoutRef.current = setTimeout(() => {
+      clickCountRef.current = 0;
+    }, 2000);
+
+    if (clickCountRef.current === 23) {
+      onTriggerEasterEgg();
+      clickCountRef.current = 0; // Reset after triggering
     }
   };
 
@@ -163,58 +179,17 @@ export const PostCard: React.FC<PostCardProps> = ({
           <p className="text-lg leading-relaxed font-sans mb-6 whitespace-pre-wrap text-gray-100">{post.content}</p>
         )}
         
-        {/* Likes & Interaction Bar */}
-        <div className="flex items-center gap-4 mb-6 border-t border-white/10 pt-4">
+        {/* Likes Only Bar */}
+        <div className="flex items-center justify-end border-t border-white/10 pt-4">
           <button 
-            onClick={() => onLikePost(post.id)}
-            className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors group"
+            onClick={handleLikeClick}
+            className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors group select-none"
           >
-            <div className="p-2 rounded-full bg-pink-500/10 group-hover:bg-pink-500/20 transition-all transform group-active:scale-125">
-              <Heart size={20} className={post.likes > 0 ? "fill-current" : ""} />
+            <span className="font-bold text-sm">{post.likes} 喜欢</span>
+            <div className="p-2 rounded-full bg-pink-500/10 group-hover:bg-pink-500/20 transition-all transform group-active:scale-150">
+              <Heart size={24} className={post.likes > 0 ? "fill-current" : ""} />
             </div>
-            <span className="font-bold">{post.likes} 喜欢</span>
           </button>
-        </div>
-
-        {/* Comments Section */}
-        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-          <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-gray-300 font-cute tracking-wide">
-            <MessageCircle size={16} />
-            她的留言
-          </h4>
-          
-          {post.comments.length === 0 ? (
-            <p className="text-gray-500 text-sm italic py-2">暂时还没有留言，在等她来看哦...</p>
-          ) : (
-            <div className="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
-              {post.comments.map(comment => (
-                <div key={comment.id} className="bg-white/5 p-3 rounded-lg">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-christmas-gold text-sm">{comment.author}</span>
-                    <span className="text-xs text-gray-500">{comment.date}</span>
-                  </div>
-                  <p className="text-sm text-gray-200">{comment.text}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Comment Input */}
-          <form onSubmit={handleSubmitComment} className="flex gap-2 mt-4">
-             <input 
-              type="text" 
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="写下温馨的留言..."
-              className="flex-1 bg-white/10 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-christmas-gold text-white placeholder-gray-500"
-             />
-             <button 
-              type="submit"
-              className="bg-christmas-red hover:bg-red-700 text-white p-2 rounded-lg transition-colors"
-             >
-               <Send size={18} />
-             </button>
-          </form>
         </div>
       </div>
     </div>
