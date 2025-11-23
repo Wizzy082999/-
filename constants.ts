@@ -7,177 +7,25 @@ export const INITIAL_DECORATIONS: Decoration[] = [
   { id: 'd3', type: 'snowman', x: 15, y: 75, scale: 1.5, visible: true },
 ];
 
-export const INITIAL_CHAPTERS = [
+export const INITIAL_CHAPTERS: Chapter[] = [
   {
-    "id": "c1",
-    "title": "第一章：开始的篇章",
-    "heroTitle": "Merry Christmas",
-    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
-    "weather": "snow",
-    "decorations": [
+    id: 'c1',
+    title: '第一章：开始的篇章',
+    heroTitle: 'Merry Christmas',
+    heroSubtitle: '收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️',
+    weather: 'snow',
+    decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
+    posts: [
       {
-        "id": "d1",
-        "type": "santa",
-        "x": 23.117154811715483,
-        "y": 26.83982683982684,
-        "scale": 1.5,
-        "visible": true
-      },
-      {
-        "id": "d2",
-        "type": "tree",
-        "x": 79.81171548117155,
-        "y": 68.18181818181817,
-        "scale": 2,
-        "visible": true
-      },
-      {
-        "id": "d3",
-        "type": "snowman",
-        "x": 12.186192468619247,
-        "y": 60.71428571428571,
-        "scale": 1.5,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879907010-re875",
-        "type": "tree",
-        "x": 17.625523012552303,
-        "y": 59.09090909090909,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879907246-rx04c",
-        "type": "tree",
-        "x": 87.22730062348305,
-        "y": 76.17274800955505,
-        "scale": 1,
-        "visible": true
+        id: 'sample-post-1',
+        title: '文件夹创建成功！',
+        date: '2023-12-25',
+        content: '当你看到这张圣诞树图片时，说明 public/images 文件夹已经自动创建好啦！\n\n以后你只需要把照片上传到这个文件夹，然后路径填 "/images/你的照片名.jpg" 就可以永久保存了。',
+        mediaUrl: '/images/sample.svg',
+        mediaType: 'image',
+        likes: 99
       }
-    ],
-    "posts": [
-      {
-        "id": "p-1763881134134-vocsxna87",
-        "title": "111",
-        "content": "111111",
-        "date": "2025-11-23",
-        "mediaUrl": "/images/test1.png",
-        "mediaType": "image",
-        "likes": 0
-      }
-    ],
-    "bgmUrl": "blob:https://miaomiao-theta.vercel.app/1a11a2c0-8a55-4b8e-9520-7b48fa959492"
-  },
-  {
-    "id": "c-1763879954839-0.7468223961682955",
-    "title": "第二章",
-    "heroTitle": "Merry Christmas",
-    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
-    "weather": "sunny",
-    "decorations": [
-      {
-        "id": "d2",
-        "type": "tree",
-        "x": 85,
-        "y": 65,
-        "scale": 2,
-        "visible": true
-      },
-      {
-        "id": "d3",
-        "type": "snowman",
-        "x": 15,
-        "y": 75,
-        "scale": 1.5,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879980077-p2xis",
-        "type": "dog",
-        "x": 21.986834335624764,
-        "y": 63.719761489325094,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879980246-vm6yb",
-        "type": "dog",
-        "x": 21.809623430962343,
-        "y": 82.57575757575758,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879981193-5ulsg",
-        "type": "cat",
-        "x": 76.25523012552301,
-        "y": 53.896103896103895,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879981335-q8hqv",
-        "type": "cat",
-        "x": 76.88284518828452,
-        "y": 75.32467532467533,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879987901-3chrq",
-        "type": "snowman",
-        "x": 23.744769874476987,
-        "y": 41.883116883116884,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879988230-3kgf1",
-        "type": "snowman",
-        "x": 76.6213389121339,
-        "y": 34.090909090909086,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879993596-nubgp",
-        "type": "lantern",
-        "x": 78.5041841004184,
-        "y": 90.47619047619048,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763879994044-5nvuj",
-        "type": "lantern",
-        "x": 23.48326359832636,
-        "y": 27.27272727272727,
-        "scale": 1,
-        "visible": true
-      }
-    ],
-    "posts": [
-      {
-        "id": "p-1763879974146-vfj4llm3i",
-        "title": "222",
-        "content": "2额饿额额",
-        "date": "2025-11-22",
-        "mediaUrl": "/images/test2.png",
-        "mediaType": "image",
-        "likes": 0
-      },
-      {
-        "id": "p-1763880017222-6q1rug0ev",
-        "title": "2222",
-        "content": "e22e2e2e2",
-        "date": "2025-11-23",
-        "mediaUrl": "/images/test3.jpg",
-        "mediaType": "image",
-        "likes": 0
-      }
-    ],
-    "bgmUrl": "blob:https://miaomiao-theta.vercel.app/9d891058-5d41-4c4f-ad26-772481888977"
+    ]
   }
 ];
 

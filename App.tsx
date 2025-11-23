@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -276,28 +276,24 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!currentChapter) return;
     
-    // Priority: Manual URL (stable) > Uploaded File (temporary Blob)
-    let mediaUrl = newPostMediaUrlInput.trim();
-    
     // --- SMART PATH LOGIC (LAZY MODE) ---
     // User goal: Just type "photo.jpg" and have it work.
     
-    // 1. Is it a full web URL?
+    let mediaUrl = newPostMediaUrlInput.trim();
+    
     if (mediaUrl && !mediaUrl.startsWith('http')) {
-        // It's a local file. Let's clean it up.
+        // 1. Remove 'public/' prefix if user typed it (Common mistake)
+        let clean = mediaUrl.replace(/^\/?public\//i, ''); // case insensitive replace
         
-        // Remove 'public/' or '/public/' prefixes (Common mistakes)
-        let clean = mediaUrl.replace(/^\/?public\//, '');
-        // Remove leading slash if present, so we can control it
+        // 2. Remove leading slash
         clean = clean.replace(/^\//, '');
 
-        // Does it start with 'images/'? If not, add it.
-        // This assumes your intent is always public/images/
+        // 3. Ensure it starts with 'images/'
         if (!clean.startsWith('images/')) {
             clean = 'images/' + clean;
         }
 
-        // Add the leading slash back for the final path
+        // 4. Add the leading slash back
         mediaUrl = '/' + clean;
     }
 
@@ -711,9 +707,9 @@ const App: React.FC = () => {
                         </div>
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                            <span className="font-bold text-green-700">使用方法：</span><br/>
-                           1. 确保图片已上传到 GitHub 的 <code className="bg-white px-1 rounded border border-gray-200">public/images/</code> 文件夹。<br/>
-                           2. 下面只需要填图片文件名即可 (例如：<code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
-                           我得会自动帮你加上路径！
+                           1. 把图片传到 GitHub 的 public/images/ 文件夹。<br/>
+                           2. 下面只需填 <span className="font-bold">图片名</span> (如: <code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
+                           3. 我会自动帮你处理路径！
                         </p>
                         <input 
                             type="text"
@@ -858,10 +854,14 @@ const App: React.FC = () => {
                     <li>点击下方的 <span className="bg-green-100 text-green-800 font-bold px-1 rounded">复制配置代码</span> 按钮。</li>
                     <li>回到你的代码项目（VS Code），打开 <code className="bg-gray-200 px-1 py-0.5 rounded text-red-500 font-mono">constants.ts</code> 文件。</li>
                     <li>
-                        找到 <code className="bg-gray-200 px-1 py-0.5 rounded font-mono">export const INITIAL_CHAPTERS = ...</code> 这部分。
-                        <span className="block mt-1 text-gray-500 text-xs ml-4">（把原有的那一长串内容全部删掉，粘贴你刚才复制的新代码）</span>
+                        找到 <code className="bg-gray-200 px-1 py-0.5 rounded font-mono">export const INITIAL_CHAPTERS = ...</code> 这部分，
+                        把它全部替换成你刚才复制的代码。
                     </li>
-                    <li>保存文件，提交到 GitHub。等 Vercel 部署完，大家就都能看到了！</li>
+                    <li className="bg-blue-50 p-2 rounded border border-blue-200 text-blue-800 font-bold">
+                        <span className="flex items-center gap-1"><ImageIcon size={14}/> 别忘了图片！</span>
+                        如果添加了新照片(如 <code>photo.jpg</code>)，必须把文件上传到 GitHub 的 <code>public/images/</code> 文件夹。
+                    </li>
+                    <li>最后提交代码到 GitHub，Vercel 会自动更新网站。</li>
                  </ol>
               </div>
 

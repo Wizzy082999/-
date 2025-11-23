@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw, AlertCircle } from 'lucide-react';
 
 // --- SafeImage Component (The Diagnostic Detective) ---
 interface SafeImageProps {
@@ -29,30 +29,45 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
   };
 
   if (status === 'error' && !tempSrc) {
+    const fileName = src.split('/').pop();
+
     return (
       <div className="w-full bg-gray-900 border-2 border-red-500 rounded-lg p-4 flex flex-col items-center text-center gap-3 my-2 animate-fade-in">
         <div className="bg-red-500/20 p-3 rounded-full">
            <ImageOff className="text-red-400" size={32} />
         </div>
-        <h4 className="text-red-300 font-bold font-sans text-lg">图片未找到 (404)</h4>
+        <h4 className="text-red-300 font-bold font-sans text-lg">图片加载失败 (404)</h4>
         
-        <div className="bg-black/80 p-3 rounded text-sm font-mono text-yellow-400 w-full break-all border border-white/20">
-           {src}
+        <div className="bg-black/50 p-3 rounded-lg text-left w-full border border-red-500/30">
+           <p className="text-xs text-gray-400 mb-1">浏览器尝试加载的地址：</p>
+           <code className="text-sm font-mono text-yellow-400 break-all block">{src}</code>
         </div>
 
-        <div className="text-sm text-gray-300 text-left space-y-2 bg-white/10 p-3 rounded w-full">
-          <p className="font-bold text-white border-b border-gray-500 pb-1 mb-2">为什么会这样？</p>
-          <ul className="list-disc list-inside space-y-1 text-xs md:text-sm text-gray-400">
-             <li>你可能刚上传到 GitHub，但预览环境无法实时读取 GitHub 的新文件。</li>
-             <li>部署(Vercel/Netlify)后，这个路径就会自动生效了。</li>
+        <div className="text-sm text-gray-300 text-left space-y-2 bg-white/5 p-3 rounded-lg w-full border border-white/10">
+          <div className="flex items-center gap-2 text-red-300 font-bold border-b border-gray-600 pb-2 mb-2">
+            <AlertCircle size={16} />
+            <span>极高概率的错误原因：</span>
+          </div>
+          <ul className="list-disc list-inside space-y-2 text-xs md:text-sm text-gray-300">
+             <li>
+                <span className="text-white font-bold">大小写不匹配！</span> (最常见)<br/>
+                如果 GitHub 里的文件叫 <code className="bg-gray-700 px-1 text-green-300 rounded">{fileName?.replace('.jpg', '.JPG')}</code>，
+                但你代码里写的是 <code className="bg-gray-700 px-1 text-red-300 rounded">{fileName}</code>，
+                它是读不出来的。必须一模一样！
+             </li>
+             <li>
+                <span className="text-white font-bold">路径多了 "public"</span><br/>
+                发布后，<code className="text-gray-400">public/images/a.jpg</code> 这种写法是错的。
+                正确写法是直接 <code className="text-green-400">/images/a.jpg</code>。
+             </li>
           </ul>
         </div>
 
         {/* Temporary Repair Button */}
         <div className="w-full pt-2 border-t border-white/10 mt-2">
-            <label className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg cursor-pointer transition-colors shadow-lg">
-                <Upload size={16} />
-                <span className="font-bold text-sm">上传本地图片 (仅供当前预览)</span>
+            <label className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg cursor-pointer transition-colors shadow-lg group">
+                <Upload size={16} className="group-hover:scale-110 transition-transform"/>
+                <span className="font-bold text-sm">上传本地图片 (临时救急)</span>
                 <input 
                     type="file" 
                     accept="image/*" 
@@ -61,7 +76,7 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
                 />
             </label>
             <p className="text-xs text-blue-300 mt-2">
-                * 这只是临时的“替身”，不会修改你填写的代码路径。
+                * 点击这里上传，先让你女朋友看到效果。之后再去 GitHub 改文件名。
             </p>
         </div>
       </div>
@@ -71,7 +86,7 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
   return (
     <div className="relative w-full flex justify-center min-h-[100px] group">
       {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10 min-h-[200px]">
           <Loader2 className="animate-spin text-christmas-gold" size={32} />
         </div>
       )}
@@ -90,7 +105,7 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
       {tempSrc && (
           <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg border border-blue-400 flex items-center gap-1 z-20">
               <RefreshCw size={10} className="animate-spin-slow" />
-              临时预览模式
+              临时预览
           </div>
       )}
     </div>
