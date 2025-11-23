@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -77,6 +77,8 @@ const App: React.FC = () => {
   const [chapterFormTitle, setChapterFormTitle] = useState('');
   const [chapterFormBGM, setChapterFormBGM] = useState<File | null>(null);
   const [chapterFormBgmUrlInput, setChapterFormBgmUrlInput] = useState('');
+  // For previewing BGM in the modal
+  const [previewBgmUrl, setPreviewBgmUrl] = useState('');
 
   const currentChapter = chapters.find(c => c.id === currentChapterId) || chapters[0];
   const displayHeroTitle = currentChapter?.heroTitle || "Merry Christmas";
@@ -94,40 +96,60 @@ const App: React.FC = () => {
     }
   }, [isEditingHero, displayHeroTitle, displayHeroSubtitle]);
 
-  // Audio Effect
+  // Audio Effect - Simplified & Robust
   useEffect(() => {
-    if (audioRef.current && currentChapter) {
-      if (audioRef.current.src !== currentChapter.bgmUrl && currentChapter.bgmUrl) {
-          // Only change src if it's different to avoid reload
-          audioRef.current.src = currentChapter.bgmUrl;
-      }
-      
-      if (currentChapter.bgmUrl && !isMuted) {
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log("Auto-play prevented by browser policy:", error);
-                setAutoPlayFailed(true);
-            });
+    if (!audioRef.current || !currentChapter) return;
+
+    const targetUrl = currentChapter.bgmUrl;
+    
+    if (targetUrl) {
+        // Check if we need to update the source.
+        // We compare the end of the src because audioRef.current.src is absolute (http://...)
+        // while targetUrl might be relative (bgm/song.mp3)
+        const currentSrc = audioRef.current.src;
+        const isSameSource = currentSrc.endsWith(targetUrl) || currentSrc === targetUrl;
+
+        if (!isSameSource) {
+            console.log("Switching BGM to:", targetUrl);
+            audioRef.current.src = targetUrl;
+            // Only attempt to play if not muted
+            if (!isMuted) {
+                audioRef.current.play().catch(err => {
+                    console.warn("Auto-play blocked:", err);
+                    setAutoPlayFailed(true);
+                });
             }
-      } else if (!currentChapter.bgmUrl) {
+        } else {
+            // Source is same, just check play state
+            if (!isMuted && audioRef.current.paused) {
+                audioRef.current.play().catch(err => {
+                    setAutoPlayFailed(true);
+                });
+            }
+        }
+    } else {
+        // No BGM for this chapter
         audioRef.current.pause();
         audioRef.current.src = "";
-      }
     }
-  }, [currentChapterId, currentChapter?.bgmUrl]);
+  }, [currentChapterId, currentChapter?.bgmUrl, isMuted]);
 
+  // Update preview URL when input changes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.muted = isMuted;
-      if (!isMuted && currentChapter?.bgmUrl) {
-          audioRef.current.play().catch(e => {
-            console.error("Play failed", e);
-            setAutoPlayFailed(true);
-          });
+      if (chapterFormBGM) {
+          setPreviewBgmUrl(URL.createObjectURL(chapterFormBGM));
+      } else if (chapterFormBgmUrlInput) {
+          // Logic to generate preview path
+          let filename = chapterFormBgmUrlInput.trim().replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+          try { filename = decodeURIComponent(filename); } catch(e){}
+          const encodedFilename = encodeURIComponent(filename);
+          // Use relative path 'bgm/' instead of absolute '/bgm/' to support GitHub Pages subdirectories
+          setPreviewBgmUrl(`bgm/${encodedFilename}`);
+      } else {
+          setPreviewBgmUrl('');
       }
-    }
-  }, [isMuted, currentChapter?.bgmUrl]);
+  }, [chapterFormBgmUrlInput, chapterFormBGM]);
+
 
   // --- Unlock Admin ---
   const handleUnlockAdmin = () => {
@@ -284,27 +306,16 @@ const App: React.FC = () => {
     if (!currentChapter) return;
     
     // --- SMART PATH LOGIC (LAZY MODE) ---
-    // User goal: Just type "photo.jpg" and have it work.
-    
     let mediaUrl = newPostMediaUrlInput.trim();
     
     if (mediaUrl && !mediaUrl.startsWith('http')) {
-        // 1. Remove 'public/' prefix if user typed it (Common mistake)
-        let clean = mediaUrl.replace(/^\/?public\//i, ''); // case insensitive replace
-        
-        // 2. Remove leading slash
-        clean = clean.replace(/^\//, '');
-
-        // 3. Ensure it starts with 'images/'
-        if (!clean.startsWith('images/')) {
-            clean = 'images/' + clean;
-        }
-
-        // 4. Add the leading slash back
-        mediaUrl = '/' + clean;
+        let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
+        try { filename = decodeURIComponent(filename); } catch(e){}
+        const encodedFilename = encodeURIComponent(filename);
+        // Use relative path 'images/'
+        mediaUrl = `images/${encodedFilename}`;
     }
 
-    // Fallback: Use uploaded file blob if no URL provided
     if (!mediaUrl && newPostMedia) {
         mediaUrl = URL.createObjectURL(newPostMedia);
     }
@@ -327,7 +338,6 @@ const App: React.FC = () => {
     }));
 
     setIsPostModalOpen(false);
-    // Reset form
     setNewPostTitle('');
     setNewPostContent('');
     setNewPostDate('');
@@ -354,6 +364,7 @@ const App: React.FC = () => {
     setChapterFormBGM(null);
     setChapterFormBgmUrlInput('');
     setEditingChapterId(null);
+    setPreviewBgmUrl('');
     setIsChapterModalOpen(true);
   };
 
@@ -361,8 +372,15 @@ const App: React.FC = () => {
     setChapterFormMode('edit');
     setChapterFormTitle(chapter.title);
     setChapterFormBGM(null);
-    // Pre-fill with existing BGM URL so they can see/edit it
-    setChapterFormBgmUrlInput(chapter.bgmUrl || '');
+    
+    let displayUrl = chapter.bgmUrl || '';
+    try {
+        displayUrl = decodeURIComponent(displayUrl);
+        // Strip path for display
+        displayUrl = displayUrl.replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+    } catch (e) {}
+    
+    setChapterFormBgmUrlInput(displayUrl);
     setEditingChapterId(chapter.id);
     setIsChapterModalOpen(true);
   };
@@ -374,19 +392,22 @@ const App: React.FC = () => {
     
     // 1. Prioritize Manual Input (Deployment Safe)
     if (chapterFormBgmUrlInput.trim()) {
-        let clean = chapterFormBgmUrlInput.trim();
-        if (!clean.startsWith('http')) {
-            clean = clean.replace(/^\/?public\//i, '');
-            clean = clean.replace(/^\//, '');
-            // Smart Path: Add 'bgm/' if missing
-            if (!clean.startsWith('bgm/')) {
-                clean = 'bgm/' + clean;
-            }
-            clean = '/' + clean;
+        const rawInput = chapterFormBgmUrlInput.trim();
+
+        if (rawInput.startsWith('http')) {
+            finalBgmUrl = rawInput;
+        } else {
+            // SMART HANDLING FOR LOCAL FILES
+            let filename = rawInput.replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+            try { filename = decodeURIComponent(filename); } catch(e){}
+            const encodedFilename = encodeURIComponent(filename);
+            
+            // IMPORTANT: Use relative path 'bgm/...' NOT '/bgm/...' 
+            // This ensures it works on GitHub Pages with subdirectories.
+            finalBgmUrl = `bgm/${encodedFilename}`;
         }
-        finalBgmUrl = clean;
     } 
-    // 2. Fallback to Blob (Local Test Only)
+    // 2. Fallback to Blob
     else if (chapterFormBGM) {
         finalBgmUrl = URL.createObjectURL(chapterFormBGM);
     }
@@ -410,7 +431,6 @@ const App: React.FC = () => {
           return {
             ...c,
             title: chapterFormTitle,
-            // Keep old URL if no new one provided
             bgmUrl: finalBgmUrl !== undefined ? finalBgmUrl : c.bgmUrl
           };
         }
@@ -430,7 +450,15 @@ const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen font-sans text-white overflow-hidden">
-      <audio ref={audioRef} loop />
+      {/* Main Audio Player (Hidden, but logic is active) */}
+      <audio 
+        ref={audioRef} 
+        loop 
+        onError={(e) => {
+           console.error("Main Audio playback error", e);
+           setAutoPlayFailed(true);
+        }}
+      />
       <WeatherLayer weather={currentChapter.weather} />
 
       {currentChapter.decorations.map(deco => (
@@ -483,7 +511,6 @@ const App: React.FC = () => {
                           setIsMuted(true);
                       }
                   }}
-                  // RESTORED CLASSIC BGM BUTTON STYLE
                   className={`p-2 rounded-full transition-all flex items-center justify-center backdrop-blur-md border ${
                       !isMuted && !autoPlayFailed 
                         ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 hover:scale-105' 
@@ -840,12 +867,15 @@ const App: React.FC = () => {
                {/* BGM Section with Smart Input */}
                <div>
                   <label className="block text-sm font-bold text-gray-600 mb-1">
-                    {chapterFormMode === 'edit' ? '设置/更换 BGM' : '专属 BGM (可选)'}
+                    背景音乐 (BGM)
                   </label>
                   
                   {/* Manual Input (Permanent) */}
-                  <div className="mb-2">
-                      <p className="text-xs text-green-600 mb-1">❤️ 推荐：永久保存模式</p>
+                  <div className="bg-green-50 border border-green-200 p-3 rounded-xl mb-3">
+                      <p className="text-xs text-green-800 font-bold mb-1">✨ 懒人模式：只需填文件名</p>
+                      <p className="text-xs text-gray-600 mb-2">
+                          先把音乐/视频文件放到 <code className="bg-white px-1 border rounded">public/bgm</code> 文件夹，然后在下面填名字即可。
+                      </p>
                       <input 
                         type="text" 
                         value={chapterFormBgmUrlInput}
@@ -853,9 +883,30 @@ const App: React.FC = () => {
                             setChapterFormBgmUrlInput(e.target.value);
                             setChapterFormBGM(null); // Reset file if text is typed
                         }}
-                        placeholder="song.mp3 (需上传到 public/bgm)"
-                        className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 bg-green-50"
+                        placeholder="例如: love.mp3 或 my-video.mp4"
+                        className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 bg-white"
                       />
+                      {previewBgmUrl && (
+                          <div className="mt-3 p-2 bg-white/50 rounded border border-green-100">
+                             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                <PlayCircle size={14} className="text-green-600"/>
+                                <span className="font-bold">预览播放 (测试路径是否正确):</span>
+                             </div>
+                             <audio 
+                                controls 
+                                src={previewBgmUrl} 
+                                className="w-full h-8"
+                                onError={(e) => {
+                                    const target = e.target as HTMLAudioElement;
+                                    target.style.borderColor = 'red';
+                                    alert("测试播放失败！\n1. 检查文件名是否完全一致（包括大小写 mp3 vs MP3）\n2. 检查 GitHub 上的文件是否在 public/bgm 文件夹里");
+                                }}
+                             />
+                             <p className="text-[10px] text-gray-400 mt-1 text-center">
+                                浏览器正在尝试加载: {previewBgmUrl}
+                             </p>
+                          </div>
+                      )}
                   </div>
 
                   <div className="relative flex py-1 items-center">

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw, AlertCircle } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw, AlertCircle, Calendar } from 'lucide-react';
 
 // --- SafeImage Component (The Diagnostic Detective) ---
 interface SafeImageProps {
@@ -200,7 +200,11 @@ export const PostCard: React.FC<PostCardProps> = ({
           ) : (
             <>
               <h3 className="text-2xl font-cute text-christmas-gold leading-snug">{post.title}</h3>
-              <span className="text-sm text-gray-300 block mt-1 font-mono opacity-80">{post.date}</span>
+              {/* Date Display Enhancement */}
+              <div className="flex items-center gap-1.5 mt-2 text-xs md:text-sm text-pink-200/90 font-mono bg-pink-500/10 border border-pink-500/20 px-2 py-1 rounded w-fit">
+                <Calendar size={12} />
+                <span>{post.date}</span>
+              </div>
             </>
           )}
         </div>
