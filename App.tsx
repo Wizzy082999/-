@@ -499,7 +499,7 @@ const App: React.FC = () => {
                 
                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
                    <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
-                      致最可爱的你：<br/>
+                      亲爱的苗苗老师：<br/>
                       这里藏着一份特别的礼物，<br/>
                       记录了我们的点点滴滴。
                    </p>
