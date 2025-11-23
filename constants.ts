@@ -7,25 +7,120 @@ export const INITIAL_DECORATIONS: Decoration[] = [
   { id: 'd3', type: 'snowman', x: 15, y: 75, scale: 1.5, visible: true },
 ];
 
-export const INITIAL_CHAPTERS: Chapter[] = [
+export const INITIAL_CHAPTERS = [
   {
-    id: 'c1',
-    title: '第一章：开始的篇章',
-    heroTitle: 'Merry Christmas',
-    heroSubtitle: '收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️',
-    weather: 'snow',
-    decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
-    posts: [
+    "id": "c1",
+    "title": "第一章：开始的篇章",
+    "heroTitle": "Merry Christmas",
+    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
+    "weather": "snow",
+    "decorations": [
       {
-        id: 'sample-post-1',
-        title: '文件夹创建成功！',
-        date: '2023-12-25',
-        content: '当你看到这张圣诞树图片时，说明 public/images 文件夹已经自动创建好啦！\n\n以后你只需要把照片上传到这个文件夹，然后路径填 "/images/你的照片名.jpg" 就可以永久保存了。',
-        mediaUrl: '/images/sample.svg',
-        mediaType: 'image',
-        likes: 99
+        "id": "d1",
+        "type": "santa",
+        "x": 10,
+        "y": 15,
+        "scale": 1.5,
+        "visible": true
+      },
+      {
+        "id": "d2",
+        "type": "tree",
+        "x": 89.0625,
+        "y": 64.97354497354497,
+        "scale": 2,
+        "visible": true
+      },
+      {
+        "id": "d3",
+        "type": "snowman",
+        "x": 15,
+        "y": 75,
+        "scale": 1.5,
+        "visible": true
       }
-    ]
+    ],
+    "posts": [
+      {
+        "id": "p-1763882804955-2fksao1og",
+        "title": "111",
+        "content": "111",
+        "date": "2025-11-22",
+        "mediaUrl": "/images/test1.png",
+        "mediaType": "image",
+        "likes": 0
+      }
+    ],
+    "bgmUrl": "blob:https://miaomiao-theta.vercel.app/b3410f5a-11ca-430c-833a-6596e3a76047"
+  },
+  {
+    "id": "c-1763882830286-0.9762468187284853",
+    "title": "222",
+    "heroTitle": "Merry Christmas",
+    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
+    "weather": "sunny",
+    "decorations": [
+      {
+        "id": "d1",
+        "type": "santa",
+        "x": 10,
+        "y": 15,
+        "scale": 1.5,
+        "visible": true
+      },
+      {
+        "id": "d2",
+        "type": "tree",
+        "x": 85,
+        "y": 65,
+        "scale": 2,
+        "visible": true
+      },
+      {
+        "id": "d3",
+        "type": "snowman",
+        "x": 15,
+        "y": 75,
+        "scale": 1.5,
+        "visible": true
+      },
+      {
+        "id": "deco-1763882837476-nxl3k",
+        "type": "bell",
+        "x": 74.54778043494598,
+        "y": 75.28561244048919,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763882837886-3ptll",
+        "type": "gift",
+        "x": 20.260416666666668,
+        "y": 60.10582010582011,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763882838726-zmva0",
+        "type": "star",
+        "x": 19.492965336149943,
+        "y": 87.92140960777127,
+        "scale": 1,
+        "visible": true
+      }
+    ],
+    "posts": [
+      {
+        "id": "p-1763882856186-en4pq6nei",
+        "title": "222",
+        "content": "222",
+        "date": "2025-11-24",
+        "mediaUrl": "/images/test2.png",
+        "mediaType": "image",
+        "likes": 0
+      }
+    ],
+    "bgmUrl": "blob:https://miaomiao-theta.vercel.app/17880a3f-eeb9-42ad-b128-2652d5413995"
   }
 ];
 
