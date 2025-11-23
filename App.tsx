@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -26,18 +26,9 @@ const App: React.FC = () => {
   const [giantHeartVisible, setGiantHeartVisible] = useState(false);
 
   // State: Chapters
-  // Initialize from localStorage if available to prevent data loss on refresh
-  const [chapters, setChapters] = useState<Chapter[]>(() => {
-    const saved = localStorage.getItem('christmas_chapters');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse saved chapters", e);
-      }
-    }
-    return INITIAL_CHAPTERS;
-  });
+  // 🚀 修改逻辑：优先读取代码里的 INITIAL_CHAPTERS，确保部署后所有人看到的是最新的
+  // 不再自动读取 localStorage，避免旧缓存导致内容不更新
+  const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
 
   const [currentChapterId, setCurrentChapterId] = useState<string>(() => {
      // Also try to restore the last viewed chapter
@@ -92,10 +83,42 @@ const App: React.FC = () => {
   const prevChapter = chapters[currentChapterIndex - 1];
   const nextChapter = chapters[currentChapterIndex + 1];
 
+  // Prevent overwriting localStorage on initial load
+  const isFirstRender = useRef(true);
+
   // Save to localStorage whenever chapters change
   useEffect(() => {
+    // 🚀 关键修改：第一次渲染时不保存，防止把空状态或代码状态覆盖到本地缓存中
+    // 只有当你真正开始操作（导致 chapters 变化）时，才写入本地缓存
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     localStorage.setItem('christmas_chapters', JSON.stringify(chapters));
   }, [chapters]);
+
+  // 🚀 新增：手动恢复草稿功能
+  const handleRecoverDraft = () => {
+    const saved = localStorage.getItem('christmas_chapters');
+    if (saved) {
+      if (window.confirm("确认加载未保存的草稿？\n\n这会覆盖当前显示的内容。如果你之前编辑了一半没保存代码就刷新了，请点确定。")) {
+        try {
+          const parsed = JSON.parse(saved);
+          setChapters(parsed);
+          // 如果当前章节在新数据里不存在，重置为第一个
+          if (!parsed.find((c: Chapter) => c.id === currentChapterId)) {
+             setCurrentChapterId(parsed[0]?.id || 'c1');
+          }
+          alert("草稿已恢复！别忘了点击“保存代码”导出哦。");
+        } catch (e) {
+          console.error("Failed to parse saved chapters", e);
+          alert("草稿文件损坏，无法恢复。");
+        }
+      }
+    } else {
+      alert("没有在本地找到已保存的草稿。");
+    }
+  };
 
   useEffect(() => {
     if (isEditingHero) {
@@ -526,9 +549,9 @@ const App: React.FC = () => {
                 
                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
                    <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
-                      亲爱的喵喵老师：<br/>
+                      致最可爱的你：<br/>
                       这里藏着一份特别的礼物，<br/>
-                      送给最最最可爱的你₍^•༚• ྀི^₎⟆
+                      记录了我们的点点滴滴。
                    </p>
                    
                    <button 
@@ -671,14 +694,24 @@ const App: React.FC = () => {
             {isAdmin && (
               <div className="flex gap-2 items-center shrink-0 animate-fade-in">
                 {mode === 'editor' && (
-                    <button 
-                      onClick={handleExportData}
-                      className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3 mr-2"
-                      title="导出数据以便部署"
-                    >
-                      <Download size={16} />
-                      <span className="text-xs font-bold hidden md:inline">保存代码</span>
-                    </button>
+                    <>
+                        <button 
+                          onClick={handleRecoverDraft}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3"
+                          title="恢复上次未保存的进度 (Local Storage)"
+                        >
+                          <RotateCcw size={16} />
+                        </button>
+
+                        <button 
+                          onClick={handleExportData}
+                          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3 mr-2"
+                          title="导出数据以便部署"
+                        >
+                          <Download size={16} />
+                          <span className="text-xs font-bold hidden md:inline">保存代码</span>
+                        </button>
+                    </>
                 )}
 
                 <div className="bg-black/60 backdrop-blur-md rounded-full p-1 flex border border-white/10">
