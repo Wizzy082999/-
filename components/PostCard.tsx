@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2 } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw } from 'lucide-react';
 
 // --- SafeImage Component (The Diagnostic Detective) ---
 interface SafeImageProps {
@@ -11,49 +11,88 @@ interface SafeImageProps {
 
 const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
+  const [tempSrc, setTempSrc] = useState<string | null>(null);
   
+  // Reset state when the source prop changes (e.g. user edits the filename)
   useEffect(() => {
     setStatus('loading');
+    setTempSrc(null);
   }, [src]);
 
-  if (status === 'error') {
+  const handleTempUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setTempSrc(objectUrl);
+      setStatus('success');
+    }
+  };
+
+  if (status === 'error' && !tempSrc) {
     return (
-      <div className="w-full bg-gray-900 border-2 border-red-500 rounded-lg p-4 flex flex-col items-center text-center gap-3 my-2">
-        <div className="bg-red-500/20 p-3 rounded-full animate-pulse">
+      <div className="w-full bg-gray-900 border-2 border-red-500 rounded-lg p-4 flex flex-col items-center text-center gap-3 my-2 animate-fade-in">
+        <div className="bg-red-500/20 p-3 rounded-full">
            <ImageOff className="text-red-400" size={32} />
         </div>
-        <h4 className="text-red-300 font-bold font-sans text-lg">图片加载失败</h4>
+        <h4 className="text-red-300 font-bold font-sans text-lg">图片未找到 (404)</h4>
         
         <div className="bg-black/80 p-3 rounded text-sm font-mono text-yellow-400 w-full break-all border border-white/20">
            {src}
         </div>
 
         <div className="text-sm text-gray-300 text-left space-y-2 bg-white/10 p-3 rounded w-full">
-          <p className="font-bold text-white border-b border-gray-500 pb-1 mb-2">排查步骤：</p>
-          <ul className="list-decimal list-inside space-y-1 text-xs md:text-sm">
-             <li>请确认 GitHub 仓库的 <code className="bg-gray-700 px-1 rounded text-green-300">public/images</code> 文件夹里真的有这张图。</li>
-             <li><strong className="text-red-400">文件名必须完全一致！</strong> 比如 <code className="text-yellow-300">Photo.jpg</code> 和 <code className="text-yellow-300">photo.jpg</code> 是不一样的。</li>
-             <li>如果你看到上面的黄色路径是 <code className="text-yellow-300">/images/xxx.jpg</code>，那说明路径是对的，通常是文件名拼错了或者文件没上传成功。</li>
+          <p className="font-bold text-white border-b border-gray-500 pb-1 mb-2">为什么会这样？</p>
+          <ul className="list-disc list-inside space-y-1 text-xs md:text-sm text-gray-400">
+             <li>你可能刚上传到 GitHub，但预览环境无法实时读取 GitHub 的新文件。</li>
+             <li>部署(Vercel/Netlify)后，这个路径就会自动生效了。</li>
           </ul>
+        </div>
+
+        {/* Temporary Repair Button */}
+        <div className="w-full pt-2 border-t border-white/10 mt-2">
+            <label className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg cursor-pointer transition-colors shadow-lg">
+                <Upload size={16} />
+                <span className="font-bold text-sm">上传本地图片 (仅供当前预览)</span>
+                <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleTempUpload}
+                />
+            </label>
+            <p className="text-xs text-blue-300 mt-2">
+                * 这只是临时的“替身”，不会修改你填写的代码路径。
+            </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full flex justify-center min-h-[100px]">
+    <div className="relative w-full flex justify-center min-h-[100px] group">
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10">
           <Loader2 className="animate-spin text-christmas-gold" size={32} />
         </div>
       )}
+      
       <img 
-        src={src} 
+        src={tempSrc || src} 
         alt={alt} 
         className={`max-w-full max-h-[80vh] object-contain w-auto h-auto rounded-lg transition-opacity duration-300 ${status === 'loading' ? 'opacity-0' : 'opacity-100'}`}
         onLoad={() => setStatus('success')}
-        onError={() => setStatus('error')}
+        onError={() => {
+            // Only trigger error if we aren't using a temporary source
+            if (!tempSrc) setStatus('error');
+        }}
       />
+      
+      {tempSrc && (
+          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-lg border border-blue-400 flex items-center gap-1 z-20">
+              <RefreshCw size={10} className="animate-spin-slow" />
+              临时预览模式
+          </div>
+      )}
     </div>
   );
 };
