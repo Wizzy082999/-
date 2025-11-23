@@ -340,7 +340,7 @@ const App: React.FC = () => {
   const copyToClipboard = () => {
       const dataString = JSON.stringify(chapters, null, 2);
       navigator.clipboard.writeText(`export const INITIAL_CHAPTERS = ${dataString};`);
-      alert("代码已复制！\n请打开项目中的 constants.ts 文件，\n用粘贴的内容替换原有的 INITIAL_CHAPTERS。");
+      alert("代码已复制！\n请打开 VS Code 里的 constants.ts 文件，\n粘贴并替换原有内容，然后提交到 GitHub。");
   };
 
 
@@ -712,7 +712,7 @@ const App: React.FC = () => {
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                            <span className="font-bold text-green-700">使用方法：</span><br/>
                            1. 确保图片已上传到 GitHub 的 <code className="bg-white px-1 rounded border border-gray-200">public/images/</code> 文件夹。<br/>
-                           2. 下面只需要填图片名字即可 (例如：<code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
+                           2. 下面只需要填图片文件名即可 (例如：<code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
                            我得会自动帮你加上路径！
                         </p>
                         <input 
@@ -838,25 +838,30 @@ const App: React.FC = () => {
            <div className="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl animate-scale-in text-gray-800">
               <div className="flex items-center gap-3 mb-4 text-green-700">
                  <Download size={32} />
-                 <h3 className="text-2xl font-bold">准备部署</h3>
+                 <h3 className="text-2xl font-bold">同步内容给女朋友</h3>
               </div>
               
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 text-sm text-blue-800">
-                 <p className="font-bold mb-2">为什么需要这一步？</p>
-                 <p>
-                   因为这是一个纯前端网站（没有后端数据库），部署后无法在线保存新内容。
-                   你需要把现在做好的内容（故事、装饰、天气）转换成代码，保存到项目中，然后一起部署上去。
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-sm text-red-800">
+                 <div className="flex items-center gap-2 mb-2">
+                     <AlertTriangle size={18} />
+                     <p className="font-bold text-lg">重要提示：</p>
+                 </div>
+                 <p className="leading-relaxed">
+                   你现在看到的内容（帖子、DIY装饰）目前只保存在 <span className="font-bold underline">你自己的浏览器缓存</span> 里。
+                   你直接分享网址给别人，<span className="font-bold text-red-600">他们是看不到这些新内容的！</span>
                  </p>
               </div>
 
               <div className="mb-6">
-                 <label className="block text-sm font-bold text-gray-600 mb-2">操作步骤：</label>
-                 <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                    <li>点击下方的 <strong>“复制配置代码”</strong> 按钮。</li>
-                    <li>打开你项目文件夹中的 <code className="bg-gray-200 px-1 py-0.5 rounded text-red-500">constants.ts</code> 文件。</li>
-                    <li>找到 <code className="bg-gray-200 px-1 py-0.5 rounded">export const INITIAL_CHAPTERS = ...</code> 这部分代码。</li>
-                    <li>用你复制的内容完全替换它。</li>
-                    <li>保存文件，提交到 GitHub，Vercel 会自动更新网站！</li>
+                 <label className="block text-sm font-bold text-gray-600 mb-2">只需3步，让大家都能看到：</label>
+                 <ol className="list-decimal list-inside space-y-3 text-sm text-gray-700 bg-gray-50 p-5 rounded-lg border border-gray-200">
+                    <li>点击下方的 <span className="bg-green-100 text-green-800 font-bold px-1 rounded">复制配置代码</span> 按钮。</li>
+                    <li>回到你的代码项目（VS Code），打开 <code className="bg-gray-200 px-1 py-0.5 rounded text-red-500 font-mono">constants.ts</code> 文件。</li>
+                    <li>
+                        找到 <code className="bg-gray-200 px-1 py-0.5 rounded font-mono">export const INITIAL_CHAPTERS = ...</code> 这部分。
+                        <span className="block mt-1 text-gray-500 text-xs ml-4">（把原有的那一长串内容全部删掉，粘贴你刚才复制的新代码）</span>
+                    </li>
+                    <li>保存文件，提交到 GitHub。等 Vercel 部署完，大家就都能看到了！</li>
                  </ol>
               </div>
 
