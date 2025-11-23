@@ -58,11 +58,11 @@ export const INITIAL_CHAPTERS = [
     ],
     "posts": [
       {
-        "id": "p-1763880753428-2s11m1rp4",
-        "title": "无",
-        "content": "人",
+        "id": "p-1763881134134-vocsxna87",
+        "title": "111",
+        "content": "111111",
         "date": "2025-11-23",
-        "mediaUrl": "/images/pic1.jpg",
+        "mediaUrl": "/images/test1.png",
         "mediaType": "image",
         "likes": 0
       }
