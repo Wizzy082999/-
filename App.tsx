@@ -6,12 +6,15 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
   // 🎄 默认为 'viewer' (浏览模式)，给她看的时候是纯净的
   const [mode, setMode] = useState<AppMode>('viewer');
+  
+  // Start Screen State (For Autoplay and Volume Control)
+  const [showStartScreen, setShowStartScreen] = useState(true);
   
   // Admin State - Default to FALSE. 
   // Click the heart icon 5 times to unlock admin features.
@@ -100,20 +103,22 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!audioRef.current || !currentChapter) return;
 
+    // 🎵 Fix 2: Set default volume to 30% immediately
+    audioRef.current.volume = 0.3;
+
     const targetUrl = currentChapter.bgmUrl;
     
     if (targetUrl) {
         // Check if we need to update the source.
-        // We compare the end of the src because audioRef.current.src is absolute (http://...)
-        // while targetUrl might be relative (bgm/song.mp3)
         const currentSrc = audioRef.current.src;
         const isSameSource = currentSrc.endsWith(targetUrl) || currentSrc === targetUrl;
 
         if (!isSameSource) {
             console.log("Switching BGM to:", targetUrl);
             audioRef.current.src = targetUrl;
-            // Only attempt to play if not muted
-            if (!isMuted) {
+            
+            // Only attempt to play if NOT on start screen and NOT muted
+            if (!showStartScreen && !isMuted) {
                 audioRef.current.play().catch(err => {
                     console.warn("Auto-play blocked:", err);
                     setAutoPlayFailed(true);
@@ -121,7 +126,7 @@ const App: React.FC = () => {
             }
         } else {
             // Source is same, just check play state
-            if (!isMuted && audioRef.current.paused) {
+            if (!showStartScreen && !isMuted && audioRef.current.paused) {
                 audioRef.current.play().catch(err => {
                     setAutoPlayFailed(true);
                 });
@@ -132,7 +137,7 @@ const App: React.FC = () => {
         audioRef.current.pause();
         audioRef.current.src = "";
     }
-  }, [currentChapterId, currentChapter?.bgmUrl, isMuted]);
+  }, [currentChapterId, currentChapter?.bgmUrl, isMuted, showStartScreen]);
 
   // Update preview URL when input changes
   useEffect(() => {
@@ -163,6 +168,22 @@ const App: React.FC = () => {
           setMode('editor');
           setAdminUnlockCount(0); // Reset counter
           alert("管理员模式已解锁！❤️\n欢迎回来，开始编辑吧！");
+      }
+  };
+  
+  // --- Start App (Unwrap Gift) ---
+  const handleStartApp = () => {
+      setShowStartScreen(false);
+      if (audioRef.current && currentChapter?.bgmUrl) {
+          // 🎵 Double check volume is low before playing
+          audioRef.current.volume = 0.3; 
+          audioRef.current.play().then(() => {
+              setAutoPlayFailed(false);
+              setIsMuted(false);
+          }).catch(e => {
+              console.error("Play failed", e);
+              setAutoPlayFailed(true);
+          });
       }
   };
 
@@ -459,6 +480,49 @@ const App: React.FC = () => {
            setAutoPlayFailed(true);
         }}
       />
+
+      {/* 🎁 START SCREEN (GIFT COVER) - Resolves Autoplay & Volume issues */}
+      {showStartScreen && (
+        <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center animate-fade-in">
+            {/* Background effects for the cover */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
+                <WeatherLayer weather="snow" />
+            </div>
+            
+            <div className="z-10 flex flex-col items-center gap-8 p-8 text-center">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-christmas-gold blur-3xl opacity-20 rounded-full animate-pulse"></div>
+                    <h1 className="text-5xl md:text-7xl font-cute text-transparent bg-clip-text bg-gradient-to-br from-christmas-gold to-yellow-200 drop-shadow-lg relative z-10">
+                        Merry Christmas
+                    </h1>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
+                   <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
+                      致最可爱的你：<br/>
+                      这里藏着一份特别的礼物，<br/>
+                      记录了我们的点点滴滴。
+                   </p>
+                   
+                   <button 
+                     onClick={handleStartApp}
+                     className="group relative w-full bg-christmas-red hover:bg-red-600 text-white font-bold py-4 px-8 rounded-xl shadow-[0_4px_15px_rgba(212,36,38,0.5)] transition-all transform hover:scale-105 active:scale-95 overflow-hidden"
+                   >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                      <div className="flex items-center justify-center gap-3 text-xl">
+                         <Gift className="animate-bounce" />
+                         <span>开启礼物</span>
+                      </div>
+                   </button>
+                   
+                   <p className="text-xs text-gray-400 mt-4">
+                      * 推荐开启声音，获得最佳体验 🎵
+                   </p>
+                </div>
+            </div>
+        </div>
+      )}
+
       <WeatherLayer weather={currentChapter.weather} />
 
       {currentChapter.decorations.map(deco => (
@@ -502,10 +566,13 @@ const App: React.FC = () => {
                   onClick={() => {
                       if (autoPlayFailed || isMuted) {
                            // Try to resolve autoplay issue or unmute
-                           audioRef.current?.play().then(() => {
-                              setAutoPlayFailed(false);
-                              setIsMuted(false);
-                           }).catch(console.error);
+                           if (audioRef.current) {
+                               audioRef.current.volume = 0.3; // Ensure volume is low when unmuting
+                               audioRef.current.play().then(() => {
+                                  setAutoPlayFailed(false);
+                                  setIsMuted(false);
+                               }).catch(console.error);
+                           }
                       } else {
                           // Just mute
                           setIsMuted(true);
@@ -1057,7 +1124,9 @@ const App: React.FC = () => {
              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-christmas-red to-transparent"></div>
              <AlertTriangle className="mx-auto text-christmas-gold mb-4" size={48} />
              <h3 className="text-2xl font-cute text-white mb-2">
-               {deleteConfirm.type === 'post' ? '彻底删除回忆？' : '删除整个篇章？'}
+               {deleteConfirm.type === 'post' 
+                 ? '彻底删除回忆？' 
+                 : '删除整个篇章？'}
              </h3>
              <p className="text-gray-400 mb-8 text-sm leading-relaxed">
                {deleteConfirm.type === 'post' 
