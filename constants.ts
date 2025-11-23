@@ -178,7 +178,11 @@ export const DECORATION_ASSETS: Record<DecorationType, string> = {
   lantern: '🏮',
   firecracker: '🧨',
   umbrella: '☂️',
-  milk: '🧋'
+  milk: '🧋',
+  flash: '⚡️',
+  beatheart: '💗',
+  popcorn: '🍿',
+  film: '🎥'
 };
 
 export const DECORATION_NAMES: Record<DecorationType, string> = {
@@ -197,12 +201,17 @@ export const DECORATION_NAMES: Record<DecorationType, string> = {
   lantern: '红灯笼',
   firecracker: '鞭炮',
   umbrella: '雨伞',
-  milk: '奶茶'
+  milk: '奶茶',
+  flash: '闪电',
+  beatheart: '跳动的心',
+  popcorn: '爆米花',
+  film: '电影'
 };
 
 // Helper array for the UI loop
 export const AVAILABLE_DECORATIONS: DecorationType[] = [
   'santa', 'tree', 'snowman', 'sock', 'gift', 'bell', 
   'cat', 'dog', 'star', 'moon', 'rainbow', 'flower', 
-  'lantern', 'firecracker', 'umbrella', 'milk'
+  'lantern', 'firecracker', 'umbrella', 'milk', 'flash', 
+  'beatheart', 'popcorn','film'
 ];
