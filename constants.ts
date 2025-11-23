@@ -14,7 +14,112 @@ export const INITIAL_CHAPTERS = [
     "heroTitle": "小答老师，你好哇！",
     "heroSubtitle": "很开心认识你，虽然是暴雨天🌧️\n但我开始不那么讨厌坏天气",
     "weather": "rain",
-    "decorations": [],
+    "decorations": [
+      {
+        "id": "deco-1763895735376-m44qp",
+        "type": "umbrella",
+        "x": 18.489583333333336,
+        "y": 51.746031746031754,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763895739049-9lgxy",
+        "type": "milk",
+        "x": 91.40625,
+        "y": 77.77777777777779,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763895751230-mys8z",
+        "type": "dog",
+        "x": 12.291666666666666,
+        "y": 66.45502645502646,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763895751953-panq5",
+        "type": "cat",
+        "x": 18.28125,
+        "y": 65.71428571428571,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763895759535-6qz0t",
+        "type": "umbrella",
+        "x": 12.395833333333334,
+        "y": 51.53439153439153,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763895779755-1svin",
+        "type": "milk",
+        "x": 75.36458333333333,
+        "y": 42.96296296296296,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896368125-5qj61",
+        "type": "film",
+        "x": 12.916666666666668,
+        "y": 86.45502645502646,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896368566-j8ouz",
+        "type": "film",
+        "x": 86.5625,
+        "y": 45.3968253968254,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896369363-66irq",
+        "type": "popcorn",
+        "x": 23.229166666666668,
+        "y": 35.026455026455025,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896369655-94abe",
+        "type": "popcorn",
+        "x": 81.25,
+        "y": 62.96296296296296,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896371181-thiss",
+        "type": "flash",
+        "x": 81.25,
+        "y": 21.48148148148148,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896371485-fez3v",
+        "type": "flash",
+        "x": 25.624999999999996,
+        "y": 15.76719576719577,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1763896371801-l3zjf",
+        "type": "flash",
+        "x": 16.71875,
+        "y": 23.28042328042328,
+        "scale": 1,
+        "visible": true
+      }
+    ],
     "posts": [
       {
         "id": "p-1763894205812-dal8w2prh",
