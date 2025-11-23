@@ -472,20 +472,26 @@ const App: React.FC = () => {
               {currentChapter.bgmUrl && (
                 <button 
                   onClick={() => {
-                      setIsMuted(!isMuted);
-                      if (autoPlayFailed) {
-                           audioRef.current?.play();
-                           setAutoPlayFailed(false);
+                      if (autoPlayFailed || isMuted) {
+                           // Try to resolve autoplay issue or unmute
+                           audioRef.current?.play().then(() => {
+                              setAutoPlayFailed(false);
+                              setIsMuted(false);
+                           }).catch(console.error);
+                      } else {
+                          // Just mute
+                          setIsMuted(true);
                       }
                   }}
-                  className={`p-2 rounded-full transition-colors flex items-center gap-2 ${
-                      !isMuted && !autoPlayFailed ? 'bg-green-600 text-white animate-pulse' : 
-                      autoPlayFailed ? 'bg-red-500 text-white animate-bounce' : 'bg-gray-600 text-gray-400'
+                  // RESTORED CLASSIC BGM BUTTON STYLE
+                  className={`p-2 rounded-full transition-all flex items-center justify-center backdrop-blur-md border ${
+                      !isMuted && !autoPlayFailed 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 hover:scale-105' 
+                        : 'bg-black/40 text-gray-400 border-white/10 hover:text-white hover:bg-black/60'
                   }`}
-                  title={autoPlayFailed ? "点击播放音乐 (浏览器已拦截)" : (isMuted ? "播放音乐" : "静音")}
+                  title={autoPlayFailed || isMuted ? "播放音乐" : "静音"}
                 >
-                  {isMuted || autoPlayFailed ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                  {autoPlayFailed && <span className="text-xs font-bold">点我播放</span>}
+                  {isMuted || autoPlayFailed ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
               )}
             </div>
@@ -613,7 +619,8 @@ const App: React.FC = () => {
                 </button>
               )}
            </div>
-           <div className="flex justify-center">
+           
+           <div className="flex flex-col items-center gap-4">
               <div className="bg-black/30 backdrop-blur-sm inline-block p-4 md:p-6 rounded-2xl border border-white/10 max-w-2xl mx-auto select-none relative">
                 <p className="text-xl md:text-2xl font-cute text-gray-100 leading-relaxed whitespace-pre-line pointer-events-none">
                   {displayHeroSubtitle}
