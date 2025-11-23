@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -87,6 +87,11 @@ const App: React.FC = () => {
   const displayHeroTitle = currentChapter?.heroTitle || "Merry Christmas";
   const displayHeroSubtitle = currentChapter?.heroSubtitle || "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️";
 
+  // Calculate Navigation Indices
+  const currentChapterIndex = chapters.findIndex(c => c.id === currentChapterId);
+  const prevChapter = chapters[currentChapterIndex - 1];
+  const nextChapter = chapters[currentChapterIndex + 1];
+
   // Save to localStorage whenever chapters change
   useEffect(() => {
     localStorage.setItem('christmas_chapters', JSON.stringify(chapters));
@@ -99,45 +104,62 @@ const App: React.FC = () => {
     }
   }, [isEditingHero, displayHeroTitle, displayHeroSubtitle]);
 
-  // Audio Effect - Simplified & Robust
+  // --- AUDIO LOGIC 1: Handle Source Switching (Chapter Change) ---
   useEffect(() => {
     if (!audioRef.current || !currentChapter) return;
 
-    // 🎵 Fix 2: Set default volume to 30% immediately
+    // Default volume
     audioRef.current.volume = 0.3;
 
     const targetUrl = currentChapter.bgmUrl;
     
     if (targetUrl) {
-        // Check if we need to update the source.
         const currentSrc = audioRef.current.src;
-        const isSameSource = currentSrc.endsWith(targetUrl) || currentSrc === targetUrl;
+        // Robust check to see if it's the same song
+        const isSameSource = currentSrc.endsWith(targetUrl) || currentSrc === targetUrl || (currentSrc.includes(encodeURIComponent(targetUrl)));
 
         if (!isSameSource) {
             console.log("Switching BGM to:", targetUrl);
             audioRef.current.src = targetUrl;
             
-            // Only attempt to play if NOT on start screen and NOT muted
+            // Only auto-play if we are past the start screen and audio is enabled
             if (!showStartScreen && !isMuted) {
                 audioRef.current.play().catch(err => {
                     console.warn("Auto-play blocked:", err);
                     setAutoPlayFailed(true);
                 });
             }
-        } else {
-            // Source is same, just check play state
-            if (!showStartScreen && !isMuted && audioRef.current.paused) {
-                audioRef.current.play().catch(err => {
-                    setAutoPlayFailed(true);
-                });
-            }
         }
+        // If it IS the same source, we do nothing here. 
+        // We let the play/pause logic below handle the state.
     } else {
         // No BGM for this chapter
         audioRef.current.pause();
         audioRef.current.src = "";
     }
-  }, [currentChapterId, currentChapter?.bgmUrl, isMuted, showStartScreen]);
+  }, [currentChapterId, currentChapter?.bgmUrl]);
+
+  // --- AUDIO LOGIC 2: Handle Play/Pause Toggle (Resume) ---
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    // Do not attempt to play if still on start screen
+    if (showStartScreen) return;
+
+    if (isMuted) {
+        // Just pause. HTML5 Audio keeps the current timestamp.
+        audioRef.current.pause();
+    } else {
+        // Resume.
+        // Only try to play if we have a valid source and it's currently paused
+        if (audioRef.current.src && audioRef.current.paused) {
+            audioRef.current.play().catch(err => {
+                console.warn("Resume failed:", err);
+                setAutoPlayFailed(true);
+            });
+        }
+    }
+  }, [isMuted, showStartScreen]);
 
   // Update preview URL when input changes
   useEffect(() => {
@@ -196,6 +218,11 @@ const App: React.FC = () => {
   };
 
   // --- Actions ---
+  
+  const handleNavigateChapter = (chapterId: string) => {
+      setCurrentChapterId(chapterId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const updateChapter = (chapterId: string, data: Partial<Chapter>) => {
     setChapters(prev => prev.map(c => c.id === chapterId ? { ...c, ...data } : c));
@@ -499,9 +526,9 @@ const App: React.FC = () => {
                 
                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
                    <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
-                      亲爱的苗苗老师：<br/>
+                      亲爱的喵喵老师：<br/>
                       这里藏着一份特别的礼物，<br/>
-                      记录了我们的点点滴滴。
+                      送给最最最可爱的你₍^•༚• ྀི^₎⟆
                    </p>
                    
                    <button 
@@ -565,16 +592,13 @@ const App: React.FC = () => {
                 <button 
                   onClick={() => {
                       if (autoPlayFailed || isMuted) {
-                           // Try to resolve autoplay issue or unmute
-                           if (audioRef.current) {
-                               audioRef.current.volume = 0.3; // Ensure volume is low when unmuting
-                               audioRef.current.play().then(() => {
-                                  setAutoPlayFailed(false);
-                                  setIsMuted(false);
-                               }).catch(console.error);
-                           }
+                           // UNMUTE: Resume playback
+                           // This logic is now handled by the useEffect dependent on `isMuted`
+                           // We just flip the switch here.
+                           setIsMuted(false);
+                           setAutoPlayFailed(false);
                       } else {
-                          // Just mute
+                          // MUTE: Pause playback
                           setIsMuted(true);
                       }
                   }}
@@ -737,7 +761,7 @@ const App: React.FC = () => {
         )}
 
         {/* Feed */}
-        <main className="container mx-auto px-4 pb-40">
+        <main className="container mx-auto px-4 pb-20">
           {sortedPosts.length > 0 ? (
              sortedPosts.map(post => (
               <PostCard 
@@ -765,6 +789,35 @@ const App: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* CHAPTER NAVIGATION BOTTOM BUTTONS */}
+          <div className="max-w-3xl mx-auto mt-16 pb-20 flex justify-between gap-4">
+              {prevChapter ? (
+                  <button 
+                      onClick={() => handleNavigateChapter(prevChapter.id)}
+                      className="flex items-center gap-2 px-6 py-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur text-white transition-all transform hover:-translate-x-1 group w-full md:w-auto"
+                  >
+                      <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                      <div className="text-left">
+                          <span className="text-xs text-gray-400 block">上一章</span>
+                          <span className="font-bold text-lg">{prevChapter.title}</span>
+                      </div>
+                  </button>
+              ) : <div className="flex-1"></div>}
+
+              {nextChapter ? (
+                  <button 
+                      onClick={() => handleNavigateChapter(nextChapter.id)}
+                      className="flex items-center justify-end gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-christmas-red to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg transition-all transform hover:translate-x-1 group w-full md:w-auto"
+                  >
+                      <div className="text-right">
+                          <span className="text-xs text-red-200 block">下一章</span>
+                          <span className="font-bold text-lg">{nextChapter.title}</span>
+                      </div>
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+              ) : <div className="flex-1"></div>}
+          </div>
           
           {isAdmin && mode === 'editor' && (
             <div className="fixed bottom-10 right-6 z-40 flex flex-col gap-4 items-end">
