@@ -204,5 +204,5 @@ export const DECORATION_NAMES: Record<DecorationType, string> = {
 export const AVAILABLE_DECORATIONS: DecorationType[] = [
   'santa', 'tree', 'snowman', 'sock', 'gift', 'bell', 
   'cat', 'dog', 'star', 'moon', 'rainbow', 'flower', 
-  'lantern', 'firecracker'
+  'lantern', 'firecracker', 'umbrella', 'milk'
 ];
