@@ -51,6 +51,12 @@ const App: React.FC = () => {
   // Sort State
   const [sortAscending, setSortAscending] = useState(true); 
 
+  // 🚀 新增：每次切换章节时，自动重置为“时间正序”（最早的回忆在最上面）
+  // 这样保证每一章打开时，都是从故事的开始讲起
+  useEffect(() => {
+    setSortAscending(true);
+  }, [currentChapterId]);
+
   // Audio Ref
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isMuted, setIsMuted] = useState(false); // Start unmuted, but browser policy might block
