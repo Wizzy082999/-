@@ -51,12 +51,6 @@ const App: React.FC = () => {
   // Sort State
   const [sortAscending, setSortAscending] = useState(true); 
 
-  // 🚀 新增：每次切换章节时，自动重置为“时间正序”（最早的回忆在最上面）
-  // 这样保证每一章打开时，都是从故事的开始讲起
-  useEffect(() => {
-    setSortAscending(true);
-  }, [currentChapterId]);
-
   // Audio Ref
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isMuted, setIsMuted] = useState(false); // Start unmuted, but browser policy might block
@@ -248,9 +242,12 @@ const App: React.FC = () => {
 
   // --- Actions ---
   
-  const handleNavigateChapter = (chapterId: string) => {
+  // 🚀 核心修复：统一的章节切换函数
+  // 确保每次切换时都重置排序并回到顶部
+  const switchChapter = (chapterId: string) => {
       setCurrentChapterId(chapterId);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setSortAscending(true); // 强制回到“最早在前”
+      window.scrollTo({ top: 0, behavior: 'auto' }); // 瞬间回到顶部，避免看到底部内容
   };
 
   const updateChapter = (chapterId: string, data: Partial<Chapter>) => {
@@ -518,9 +515,10 @@ const App: React.FC = () => {
   };
 
   const sortedPosts = currentChapter ? [...currentChapter.posts].sort((a, b) => {
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
-    return sortAscending ? dateA - dateB : dateB - dateA;
+    // 增加安全性，防止日期格式错误导致排序乱掉
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    return sortAscending ? timeA - timeB : timeB - timeA;
   }) : [];
 
   if (!currentChapter) return <div className="text-white p-10">Loading...</div>;
@@ -649,7 +647,7 @@ const App: React.FC = () => {
                   {chapters.map(chapter => (
                     <div key={chapter.id} className="relative shrink-0 flex items-center group">
                       <button
-                        onClick={() => setCurrentChapterId(chapter.id)}
+                        onClick={() => switchChapter(chapter.id)} // 🚀 这里修改为使用 switchChapter
                         className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all border mr-1 ${
                           currentChapterId === chapter.id 
                             ? 'bg-christmas-red border-christmas-gold text-white shadow-[0_0_15px_rgba(212,36,38,0.6)] transform -translate-y-1 z-10' 
@@ -833,7 +831,7 @@ const App: React.FC = () => {
           <div className="max-w-3xl mx-auto mt-16 pb-20 flex justify-between gap-4">
               {prevChapter ? (
                   <button 
-                      onClick={() => handleNavigateChapter(prevChapter.id)}
+                      onClick={() => switchChapter(prevChapter.id)} // 🚀 这里修改为使用 switchChapter
                       className="flex items-center gap-2 px-6 py-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur text-white transition-all transform hover:-translate-x-1 group w-full md:w-auto"
                   >
                       <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
@@ -846,7 +844,7 @@ const App: React.FC = () => {
 
               {nextChapter ? (
                   <button 
-                      onClick={() => handleNavigateChapter(nextChapter.id)}
+                      onClick={() => switchChapter(nextChapter.id)} // 🚀 这里修改为使用 switchChapter
                       className="flex items-center justify-end gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-christmas-red to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg transition-all transform hover:translate-x-1 group w-full md:w-auto"
                   >
                       <div className="text-right">
