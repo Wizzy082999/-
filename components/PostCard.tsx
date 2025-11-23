@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, AlertCircle } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2 } from 'lucide-react';
 
 // --- SafeImage Component (The Diagnostic Detective) ---
 interface SafeImageProps {
@@ -13,29 +13,27 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   
   useEffect(() => {
-    // Reset status when src changes
     setStatus('loading');
   }, [src]);
 
   if (status === 'error') {
     return (
-      <div className="w-full bg-gray-900 border border-red-500/50 rounded-lg p-6 flex flex-col items-center text-center gap-3">
-        <div className="bg-red-500/20 p-3 rounded-full">
+      <div className="w-full bg-gray-900 border-2 border-red-500 rounded-lg p-4 flex flex-col items-center text-center gap-3 my-2">
+        <div className="bg-red-500/20 p-3 rounded-full animate-pulse">
            <ImageOff className="text-red-400" size={32} />
         </div>
-        <h4 className="text-red-300 font-bold font-sans">图片加载失败 (404)</h4>
+        <h4 className="text-red-300 font-bold font-sans text-lg">图片加载失败</h4>
         
-        <div className="bg-black/50 p-3 rounded text-xs font-mono text-gray-300 w-full break-all border border-white/10">
-           请求路径: <span className="text-yellow-400">{src}</span>
+        <div className="bg-black/80 p-3 rounded text-sm font-mono text-yellow-400 w-full break-all border border-white/20">
+           {src}
         </div>
 
-        <div className="text-sm text-gray-400 text-left space-y-2 bg-white/5 p-3 rounded w-full">
-          <p className="font-bold text-white">排查建议：</p>
-          <ul className="list-disc list-inside space-y-1">
-             <li>检查 GitHub 里是否有 <code className="bg-gray-700 px-1 rounded">public{src}</code> 这个文件。</li>
-             <li><strong>大小写敏感！</strong> <code className="text-yellow-300">Photo.jpg</code> 和 <code className="text-yellow-300">photo.jpg</code> 是不一样的。</li>
-             <li>文件是否在 <code className="bg-gray-700 px-1 rounded">public</code> 文件夹内？</li>
-             <li>路径不需要包含 'public'。例如应填 <code className="text-green-400">/images/a.jpg</code> 而不是 <code className="text-red-400">/public/images/a.jpg</code>。</li>
+        <div className="text-sm text-gray-300 text-left space-y-2 bg-white/10 p-3 rounded w-full">
+          <p className="font-bold text-white border-b border-gray-500 pb-1 mb-2">排查步骤：</p>
+          <ul className="list-decimal list-inside space-y-1 text-xs md:text-sm">
+             <li>请确认 GitHub 仓库的 <code className="bg-gray-700 px-1 rounded text-green-300">public/images</code> 文件夹里真的有这张图。</li>
+             <li><strong className="text-red-400">文件名必须完全一致！</strong> 比如 <code className="text-yellow-300">Photo.jpg</code> 和 <code className="text-yellow-300">photo.jpg</code> 是不一样的。</li>
+             <li>如果你看到上面的黄色路径是 <code className="text-yellow-300">/images/xxx.jpg</code>，那说明路径是对的，通常是文件名拼错了或者文件没上传成功。</li>
           </ul>
         </div>
       </div>
@@ -43,9 +41,9 @@ const SafeImage: React.FC<SafeImageProps> = ({ src, alt }) => {
   }
 
   return (
-    <div className="relative w-full flex justify-center">
+    <div className="relative w-full flex justify-center min-h-[100px]">
       {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 h-[200px]">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10">
           <Loader2 className="animate-spin text-christmas-gold" size={32} />
         </div>
       )}
@@ -203,7 +201,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       {/* Media Section with Error Handling */}
       {post.mediaUrl && (
-        <div className="w-full bg-black/20 flex justify-center items-center min-h-[200px] p-2">
+        <div className="w-full bg-black/20 flex justify-center items-center min-h-[100px] p-2">
           {post.mediaType === 'video' ? (
             <video src={post.mediaUrl} controls className="w-full h-auto max-h-[80vh] rounded" />
           ) : (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { WeatherLayer } from './components/WeatherLayer';
 import { DraggableDecoration } from './components/DraggableDecoration';
@@ -278,16 +279,29 @@ const App: React.FC = () => {
     // Priority: Manual URL (stable) > Uploaded File (temporary Blob)
     let mediaUrl = newPostMediaUrlInput.trim();
     
-    // --- AUTO FIX LOGIC ---
-    // If user entered "public/images/foo.jpg", fix it to "/images/foo.jpg"
-    if (mediaUrl.startsWith('public/')) {
-        mediaUrl = '/' + mediaUrl.replace('public/', '');
-    }
-    // Ensure it starts with / if it's a local path (not http)
-    if (mediaUrl && !mediaUrl.startsWith('http') && !mediaUrl.startsWith('/')) {
-        mediaUrl = '/' + mediaUrl;
+    // --- SMART PATH LOGIC (LAZY MODE) ---
+    // User goal: Just type "photo.jpg" and have it work.
+    
+    // 1. Is it a full web URL?
+    if (mediaUrl && !mediaUrl.startsWith('http')) {
+        // It's a local file. Let's clean it up.
+        
+        // Remove 'public/' or '/public/' prefixes (Common mistakes)
+        let clean = mediaUrl.replace(/^\/?public\//, '');
+        // Remove leading slash if present, so we can control it
+        clean = clean.replace(/^\//, '');
+
+        // Does it start with 'images/'? If not, add it.
+        // This assumes your intent is always public/images/
+        if (!clean.startsWith('images/')) {
+            clean = 'images/' + clean;
+        }
+
+        // Add the leading slash back for the final path
+        mediaUrl = '/' + clean;
     }
 
+    // Fallback: Use uploaded file blob if no URL provided
     if (!mediaUrl && newPostMedia) {
         mediaUrl = URL.createObjectURL(newPostMedia);
     }
@@ -693,13 +707,13 @@ const App: React.FC = () => {
                      <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
                         <div className="flex items-center gap-2 mb-2 text-green-800 font-bold text-sm">
                             <Upload size={16} />
-                            <span>方案一：永久保存 (推荐) ❤️</span>
+                            <span>方案一：永久保存 (懒人模式) ❤️</span>
                         </div>
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-                           GitHub 操作技巧：<br/>
-                           点击 "Add file" -> "Create new file"。<br/>
-                           在文件名处输入：<span className="text-red-500 font-bold">public/images/你的照片名.jpg</span><br/>
-                           (注意输入斜杠 / 会自动创建文件夹！)
+                           <span className="font-bold text-green-700">使用方法：</span><br/>
+                           1. 确保图片已上传到 GitHub 的 <code className="bg-white px-1 rounded border border-gray-200">public/images/</code> 文件夹。<br/>
+                           2. 下面只需要填图片名字即可 (例如：<code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
+                           我得会自动帮你加上路径！
                         </p>
                         <input 
                             type="text"
@@ -708,7 +722,7 @@ const App: React.FC = () => {
                                 setNewPostMediaUrlInput(e.target.value);
                                 setNewPostMedia(null); // Clear file if manual URL is used
                             }}
-                            placeholder="/images/sample.svg"
+                            placeholder="photo.jpg"
                             className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
                         />
                      </div>
