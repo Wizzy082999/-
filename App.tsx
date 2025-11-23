@@ -59,7 +59,8 @@ const App: React.FC = () => {
 
   // Audio Ref
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted, but browser policy might block
+  const [autoPlayFailed, setAutoPlayFailed] = useState(false);
 
   // Form state for new post
   const [newPostTitle, setNewPostTitle] = useState('');
@@ -75,6 +76,7 @@ const App: React.FC = () => {
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [chapterFormTitle, setChapterFormTitle] = useState('');
   const [chapterFormBGM, setChapterFormBGM] = useState<File | null>(null);
+  const [chapterFormBgmUrlInput, setChapterFormBgmUrlInput] = useState('');
 
   const currentChapter = chapters.find(c => c.id === currentChapterId) || chapters[0];
   const displayHeroTitle = currentChapter?.heroTitle || "Merry Christmas";
@@ -97,7 +99,6 @@ const App: React.FC = () => {
     if (audioRef.current && currentChapter) {
       if (audioRef.current.src !== currentChapter.bgmUrl && currentChapter.bgmUrl) {
           // Only change src if it's different to avoid reload
-          audioRef.current.pause();
           audioRef.current.src = currentChapter.bgmUrl;
       }
       
@@ -105,7 +106,8 @@ const App: React.FC = () => {
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
             playPromise.catch(error => {
-                console.log("Auto-play prevented:", error);
+                console.log("Auto-play prevented by browser policy:", error);
+                setAutoPlayFailed(true);
             });
             }
       } else if (!currentChapter.bgmUrl) {
@@ -118,8 +120,11 @@ const App: React.FC = () => {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
-      if (!isMuted && currentChapter?.bgmUrl && audioRef.current.paused) {
-          audioRef.current.play().catch(console.error);
+      if (!isMuted && currentChapter?.bgmUrl) {
+          audioRef.current.play().catch(e => {
+            console.error("Play failed", e);
+            setAutoPlayFailed(true);
+          });
       }
     }
   }, [isMuted, currentChapter?.bgmUrl]);
@@ -269,6 +274,8 @@ const App: React.FC = () => {
       setNewPostMediaUrlInput('');
     } else {
       setChapterFormBGM(file);
+      // Clear manual input if file is selected
+      setChapterFormBgmUrlInput('');
     }
   };
 
@@ -345,6 +352,7 @@ const App: React.FC = () => {
     setChapterFormMode('create');
     setChapterFormTitle('');
     setChapterFormBGM(null);
+    setChapterFormBgmUrlInput('');
     setEditingChapterId(null);
     setIsChapterModalOpen(true);
   };
@@ -352,14 +360,36 @@ const App: React.FC = () => {
   const openEditChapterModal = (chapter: Chapter) => {
     setChapterFormMode('edit');
     setChapterFormTitle(chapter.title);
-    setChapterFormBGM(null); 
+    setChapterFormBGM(null);
+    // Pre-fill with existing BGM URL so they can see/edit it
+    setChapterFormBgmUrlInput(chapter.bgmUrl || '');
     setEditingChapterId(chapter.id);
     setIsChapterModalOpen(true);
   };
 
   const handleSubmitChapter = () => {
     if (!chapterFormTitle.trim()) return;
-    const bgmUrl = chapterFormBGM ? URL.createObjectURL(chapterFormBGM) : undefined;
+    
+    let finalBgmUrl = undefined;
+    
+    // 1. Prioritize Manual Input (Deployment Safe)
+    if (chapterFormBgmUrlInput.trim()) {
+        let clean = chapterFormBgmUrlInput.trim();
+        if (!clean.startsWith('http')) {
+            clean = clean.replace(/^\/?public\//i, '');
+            clean = clean.replace(/^\//, '');
+            // Smart Path: Add 'bgm/' if missing
+            if (!clean.startsWith('bgm/')) {
+                clean = 'bgm/' + clean;
+            }
+            clean = '/' + clean;
+        }
+        finalBgmUrl = clean;
+    } 
+    // 2. Fallback to Blob (Local Test Only)
+    else if (chapterFormBGM) {
+        finalBgmUrl = URL.createObjectURL(chapterFormBGM);
+    }
 
     if (chapterFormMode === 'create') {
       const newChapter: Chapter = {
@@ -370,7 +400,7 @@ const App: React.FC = () => {
         weather: 'snow',
         decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
         posts: [],
-        bgmUrl: bgmUrl
+        bgmUrl: finalBgmUrl
       };
       setChapters(prev => [...prev, newChapter]);
       setCurrentChapterId(newChapter.id);
@@ -380,7 +410,8 @@ const App: React.FC = () => {
           return {
             ...c,
             title: chapterFormTitle,
-            bgmUrl: bgmUrl || c.bgmUrl
+            // Keep old URL if no new one provided
+            bgmUrl: finalBgmUrl !== undefined ? finalBgmUrl : c.bgmUrl
           };
         }
         return c;
@@ -440,11 +471,21 @@ const App: React.FC = () => {
 
               {currentChapter.bgmUrl && (
                 <button 
-                  onClick={() => setIsMuted(!isMuted)}
-                  className={`p-2 rounded-full transition-colors ${!isMuted ? 'bg-green-600 text-white animate-pulse' : 'bg-gray-600 text-gray-400'}`}
-                  title={isMuted ? "播放音乐" : "静音"}
+                  onClick={() => {
+                      setIsMuted(!isMuted);
+                      if (autoPlayFailed) {
+                           audioRef.current?.play();
+                           setAutoPlayFailed(false);
+                      }
+                  }}
+                  className={`p-2 rounded-full transition-colors flex items-center gap-2 ${
+                      !isMuted && !autoPlayFailed ? 'bg-green-600 text-white animate-pulse' : 
+                      autoPlayFailed ? 'bg-red-500 text-white animate-bounce' : 'bg-gray-600 text-gray-400'
+                  }`}
+                  title={autoPlayFailed ? "点击播放音乐 (浏览器已拦截)" : (isMuted ? "播放音乐" : "静音")}
                 >
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  {isMuted || autoPlayFailed ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  {autoPlayFailed && <span className="text-xs font-bold">点我播放</span>}
                 </button>
               )}
             </div>
@@ -789,11 +830,33 @@ const App: React.FC = () => {
                   />
                </div>
 
+               {/* BGM Section with Smart Input */}
                <div>
                   <label className="block text-sm font-bold text-gray-600 mb-1">
                     {chapterFormMode === 'edit' ? '设置/更换 BGM' : '专属 BGM (可选)'}
                   </label>
-                  <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-2 bg-gray-50 relative">
+                  
+                  {/* Manual Input (Permanent) */}
+                  <div className="mb-2">
+                      <p className="text-xs text-green-600 mb-1">❤️ 推荐：永久保存模式</p>
+                      <input 
+                        type="text" 
+                        value={chapterFormBgmUrlInput}
+                        onChange={(e) => {
+                            setChapterFormBgmUrlInput(e.target.value);
+                            setChapterFormBGM(null); // Reset file if text is typed
+                        }}
+                        placeholder="song.mp3 (需上传到 public/bgm)"
+                        className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 bg-green-50"
+                      />
+                  </div>
+
+                  <div className="relative flex py-1 items-center">
+                    <span className="flex-shrink-0 text-gray-300 text-[10px] mx-auto">或临时上传</span>
+                  </div>
+
+                  {/* File Upload (Temp) */}
+                  <div className="flex items-center gap-2 border border-dashed border-gray-300 rounded-lg p-2 bg-gray-50 relative hover:border-gray-400">
                      <input 
                         type="file" 
                         accept="audio/*"
@@ -802,10 +865,9 @@ const App: React.FC = () => {
                      />
                      <Music className="text-gray-400" size={20} />
                      <span className="text-sm text-gray-500 flex-1 truncate">
-                       {chapterFormBGM ? chapterFormBGM.name : "点击上传 MP3 (同样刷新会消失)"}
+                       {chapterFormBGM ? chapterFormBGM.name : "点击上传文件 (刷新会消失)"}
                      </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">提示：BGM 最好也放到 public 文件夹并手动修改代码路径。</p>
                </div>
 
                <div className="flex gap-3 mt-6">
@@ -858,8 +920,11 @@ const App: React.FC = () => {
                         把它全部替换成你刚才复制的代码。
                     </li>
                     <li className="bg-blue-50 p-2 rounded border border-blue-200 text-blue-800 font-bold">
-                        <span className="flex items-center gap-1"><ImageIcon size={14}/> 别忘了图片！</span>
-                        如果添加了新照片(如 <code>photo.jpg</code>)，必须把文件上传到 GitHub 的 <code>public/images/</code> 文件夹。
+                        <span className="flex items-center gap-1"><ImageIcon size={14}/> 上传资源文件！</span>
+                        <ul className="list-disc list-inside ml-4 mt-1 font-normal">
+                            <li>图片放在: <code>public/images/</code></li>
+                            <li>音乐放在: <code>public/bgm/</code></li>
+                        </ul>
                     </li>
                     <li>最后提交代码到 GitHub，Vercel 会自动更新网站。</li>
                  </ol>
