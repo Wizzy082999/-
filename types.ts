@@ -1,7 +1,7 @@
 
 export type WeatherType = 'snow' | 'rain' | 'sunny' | 'starry';
 
-export type DecorationType = 'santa' | 'tree' | 'sock' | 'cat' | 'dog' | 'star' | 'gift' | 'rainbow' | 'flower' | 'moon' | 'snowman' | 'bell' | 'lantern' | 'firecracker' | 'umbrella' | 'milk';
+export type DecorationType = 'santa' | 'tree' | 'sock' | 'cat' | 'dog' | 'star' | 'gift' | 'rainbow' | 'flower' | 'moon' | 'snowman' | 'bell' | 'lantern' | 'firecracker' | 'umbrella' | 'milk' | 'flash' | 'beatheart'| 'popcorn'|'film';
 
 export interface Decoration {
   id: string;
