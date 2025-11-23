@@ -53,6 +53,10 @@ const App: React.FC = () => {
 
   // Audio Ref
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // 🚀 新增：滚动容器 Ref，用于控制页面滚动
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const [isMuted, setIsMuted] = useState(false); // Start unmuted, but browser policy might block
   const [autoPlayFailed, setAutoPlayFailed] = useState(false);
 
@@ -96,6 +100,14 @@ const App: React.FC = () => {
     }
     localStorage.setItem('christmas_chapters', JSON.stringify(chapters));
   }, [chapters]);
+
+  // 🚀 新增：每次切换章节时，强制回到顶部
+  // 因为 overflow 是设在内部 div 上的，window.scrollTo 不起作用，必须操作 Ref
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [currentChapterId]);
 
   // 🚀 新增：手动恢复草稿功能
   const handleRecoverDraft = () => {
@@ -243,11 +255,10 @@ const App: React.FC = () => {
   // --- Actions ---
   
   // 🚀 核心修复：统一的章节切换函数
-  // 确保每次切换时都重置排序并回到顶部
   const switchChapter = (chapterId: string) => {
       setCurrentChapterId(chapterId);
-      setSortAscending(true); // 强制回到“最早在前”
-      window.scrollTo({ top: 0, behavior: 'auto' }); // 瞬间回到顶部，避免看到底部内容
+      setSortAscending(true); // 切换章节时强制重置为“时间正序”（最早在前）
+      // 滚动逻辑已经移到 useEffect 中，这里不需要再调用 window.scrollTo
   };
 
   const updateChapter = (chapterId: string, data: Partial<Chapter>) => {
@@ -597,7 +608,11 @@ const App: React.FC = () => {
           </div>
       )}
 
-      <div className="relative z-20 h-screen overflow-y-auto overflow-x-hidden flex flex-col">
+      {/* 🚀 关键修改：把 ref 加在这个真正负责滚动的 div 上 */}
+      <div 
+        ref={scrollContainerRef}
+        className="relative z-20 h-screen overflow-y-auto overflow-x-hidden flex flex-col"
+      >
         
         {/* Header */}
         <header className="sticky top-0 z-50 p-4 bg-gradient-to-b from-black/90 via-black/70 to-transparent pointer-events-auto">
