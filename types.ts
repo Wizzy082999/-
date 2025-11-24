@@ -17,7 +17,8 @@ export interface MemoryPost {
   title: string;
   date: string;
   content: string;
-  mediaUrl?: string; // Optional now
+  mediaUrl?: string; // Legacy support for single media
+  images?: string[]; // New: Support for multiple images (9-grid)
   mediaType: 'image' | 'video';
   likes: number;
   // Comments removed as requested
