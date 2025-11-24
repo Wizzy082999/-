@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw, Video } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw, Video, MinusCircle, PlusCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -68,7 +68,9 @@ const App: React.FC = () => {
   // Updated Post Form States for Multi-Image
   const [newPostType, setNewPostType] = useState<'image' | 'video'>('image');
   const [newPostFiles, setNewPostFiles] = useState<FileList | null>(null);
-  const [newPostManualInput, setNewPostManualInput] = useState('');
+  
+  // 🚀 NEW: Dynamic Manual Paths State (List of strings instead of one string)
+  const [manualPaths, setManualPaths] = useState<string[]>(['']);
 
   // Form state for Chapter
   const [chapterFormMode, setChapterFormMode] = useState<'create' | 'edit'>('create');
@@ -386,12 +388,43 @@ const App: React.FC = () => {
       setNewPostFiles(files);
       // Determine type based on first file
       setNewPostType(files[0].type.startsWith('video') ? 'video' : 'image');
-      setNewPostManualInput('');
+      setManualPaths(['']); // Reset manual paths if using files
     } else {
       setChapterFormBGM(files[0]);
       setChapterFormBgmUrlInput('');
     }
   };
+
+  // --- Manual Path Management ---
+  const handleManualPathChange = (index: number, value: string) => {
+      // Smart Paste Logic: If user pastes a comma-separated list, split it!
+      if (value.includes(',') || value.includes('，') || value.includes('\n')) {
+          // Split by comma or newline, trim whitespace, filter empty
+          const splitValues = value.split(/[,，\n]/).map(s => s.trim()).filter(s => s);
+          if (splitValues.length > 0) {
+              const newPaths = [...manualPaths];
+              // Replace the current index with the first value, and insert the rest
+              newPaths.splice(index, 1, ...splitValues);
+              setManualPaths(newPaths);
+              return;
+          }
+      }
+
+      const newPaths = [...manualPaths];
+      newPaths[index] = value;
+      setManualPaths(newPaths);
+      setNewPostFiles(null); // Clear files if typing manually
+  };
+
+  const addManualPath = () => {
+      setManualPaths([...manualPaths, '']);
+  };
+
+  const removeManualPath = (index: number) => {
+      const newPaths = manualPaths.filter((_, i) => i !== index);
+      setManualPaths(newPaths.length > 0 ? newPaths : ['']);
+  };
+
 
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -401,27 +434,31 @@ const App: React.FC = () => {
     let finalMediaUrl = '';
     const images: string[] = [];
 
-    // Case 1: Manual Input (Lazy Mode)
-    if (newPostManualInput) {
-        let mediaUrl = newPostManualInput.trim();
-        if (mediaUrl && !mediaUrl.startsWith('http')) {
-            let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
-            try { filename = decodeURIComponent(filename); } catch(e){}
-            const encodedFilename = encodeURIComponent(filename);
-            mediaUrl = `images/${encodedFilename}`;
-        }
-        finalMediaUrl = mediaUrl;
-        images.push(mediaUrl);
+    // Case 1: Manual Input (Dynamic List)
+    const validManualPaths = manualPaths
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+
+    if (validManualPaths.length > 0) {
+        validManualPaths.forEach(path => {
+             let mediaUrl = path;
+             if (!mediaUrl.startsWith('http')) {
+                let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
+                try { filename = decodeURIComponent(filename); } catch(e){}
+                const encodedFilename = encodeURIComponent(filename);
+                mediaUrl = `images/${encodedFilename}`;
+             }
+             images.push(mediaUrl);
+        });
+        // Legacy support
+        if (images.length > 0) finalMediaUrl = images[0];
     } 
     // Case 2: File Upload (Multi-select)
     else if (newPostFiles && newPostFiles.length > 0) {
         Array.from(newPostFiles).forEach(file => {
             images.push(URL.createObjectURL(file));
         });
-        // Legacy support: use first image as mediaUrl
-        if (images.length > 0) {
-            finalMediaUrl = images[0];
-        }
+        if (images.length > 0) finalMediaUrl = images[0];
     }
 
     const newPost: MemoryPost = {
@@ -447,7 +484,7 @@ const App: React.FC = () => {
     setNewPostContent('');
     setNewPostDate(new Date().toISOString().split('T')[0]);
     setNewPostFiles(null);
-    setNewPostManualInput('');
+    setManualPaths(['']);
   };
 
   // --- Export Data Logic ---
@@ -969,27 +1006,52 @@ const App: React.FC = () => {
                  
                  <div className="space-y-4">
                      {/* Permanent Path Option (Highlighted) */}
-                     <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                     <div className="bg-green-50 border border-green-200 p-4 rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-green-400">
                         <div className="flex items-center gap-2 mb-2 text-green-800 font-bold text-sm">
                             <Upload size={16} />
                             <span>方案一：永久保存 (懒人模式) ❤️</span>
                         </div>
                         <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                            <span className="font-bold text-green-700">使用方法：</span><br/>
-                           1. 把图片传到 GitHub 的 public/images/ 文件夹。<br/>
-                           2. 下面只需填 <span className="font-bold">图片名</span> (如: <code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
-                           3. 我会自动帮你处理路径！(目前暂不支持多图手动输入)
+                           1. 图片放在 GitHub 的 <code className="bg-white px-1 rounded border border-gray-200">public/images/</code> 文件夹。<br/>
+                           2. 下面只需填文件名 (例如 <code>photo.jpg</code>)。<br/>
+                           3. <b>支持智能粘贴！</b> 如果你有多个文件名 (如: a.jpg, b.jpg)，直接粘贴到第一个框，我会自动帮你拆分！
                         </p>
-                        <input 
-                            type="text"
-                            value={newPostManualInput}
-                            onChange={(e) => {
-                                setNewPostManualInput(e.target.value);
-                                setNewPostFiles(null); // Clear file if manual URL is used
-                            }}
-                            placeholder="photo.jpg"
-                            className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
-                        />
+                        
+                        {/* DYNAMIC INPUTS */}
+                        <div className="space-y-2">
+                            {manualPaths.map((path, index) => (
+                                <div key={index} className="flex items-center gap-2 animate-fade-in">
+                                    <span className="text-xs font-bold text-green-700 w-14 shrink-0">图片 {index + 1}:</span>
+                                    <input 
+                                        type="text"
+                                        value={path}
+                                        onChange={(e) => handleManualPathChange(index, e.target.value)}
+                                        placeholder="例如: 1_4_1.jpg"
+                                        className="flex-1 border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white shadow-sm"
+                                    />
+                                    {manualPaths.length > 1 && (
+                                        <button 
+                                            type="button"
+                                            onClick={() => removeManualPath(index)}
+                                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                            title="删除这张"
+                                        >
+                                            <MinusCircle size={18} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <button 
+                            type="button"
+                            onClick={addManualPath}
+                            className="mt-3 flex items-center gap-1 text-xs font-bold text-green-700 hover:text-green-900 hover:underline px-2 py-1 rounded hover:bg-green-100 transition-colors w-fit"
+                        >
+                            <PlusCircle size={14} />
+                            添加下一张图片
+                        </button>
                      </div>
 
                      <div className="relative flex py-1 items-center">
