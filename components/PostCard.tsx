@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MemoryPost, AppMode } from '../types';
-import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw, AlertCircle, Calendar } from 'lucide-react';
+import { Heart, Trash2, Edit3, Save, X, ImageOff, Loader2, Upload, RefreshCw, AlertCircle, Calendar, PlusCircle, MinusCircle } from 'lucide-react';
 
 // --- SafeImage Component (The Diagnostic Detective) ---
 interface SafeImageProps {
@@ -117,6 +117,13 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [editTitle, setEditTitle] = useState(post.title);
   const [editDate, setEditDate] = useState(post.date);
   const [editContent, setEditContent] = useState(post.content);
+  // Initialize editImages with existing images or convert legacy mediaUrl
+  const [editImages, setEditImages] = useState<string[]>(
+    post.images && post.images.length > 0 
+        ? post.images 
+        : (post.mediaUrl && post.mediaType === 'image' ? [post.mediaUrl] : [])
+  );
+  const [newImageInput, setNewImageInput] = useState('');
 
   // 核心逻辑：获取所有需要展示的图片
   const displayImages = post.images && post.images.length > 0 
@@ -142,10 +149,15 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const handleSaveEdit = () => {
     if (onUpdatePost) {
+      // Determine the final mediaUrl (legacy support: use the first image)
+      const primaryImage = editImages.length > 0 ? editImages[0] : undefined;
+      
       onUpdatePost(post.id, {
         title: editTitle,
         date: editDate,
-        content: editContent
+        content: editContent,
+        images: editImages,
+        mediaUrl: primaryImage // Keep legacy field in sync
       });
     }
     setIsEditing(false);
@@ -155,13 +167,40 @@ export const PostCard: React.FC<PostCardProps> = ({
     setEditTitle(post.title);
     setEditDate(post.date);
     setEditContent(post.content);
+    // Reset images to original state
+    setEditImages(post.images && post.images.length > 0 
+        ? post.images 
+        : (post.mediaUrl && post.mediaType === 'image' ? [post.mediaUrl] : [])
+    );
     setIsEditing(false);
-  }
+  };
+
+  const handleAddImage = () => {
+      if (!newImageInput.trim()) return;
+      
+      let path = newImageInput.trim();
+      // Lazy Mode logic: auto-add prefix if missing
+      if (!path.startsWith('http') && !path.startsWith('images/') && !path.startsWith('/images/')) {
+         // clean up filename logic
+         let filename = path.replace(/^(\/)?(public\/)?(images\/)?/i, '');
+         path = `images/${filename}`;
+      }
+      
+      setEditImages([...editImages, path]);
+      setNewImageInput('');
+  };
+
+  const handleRemoveImage = (index: number) => {
+      setEditImages(editImages.filter((_, i) => i !== index));
+  };
 
   // 九宫格逻辑：计算 grid 的列数和样式
   const getGridClass = (count: number) => {
       if (count === 1) return "grid-cols-1"; 
-      if (count === 2 || count === 4) return "grid-cols-2 max-w-[500px]"; 
+      // 🚀 FIX: For 2 images, use full width (w-full) instead of max-w-[500px]
+      // This makes 2 images appear much larger and side-by-side filling the card.
+      if (count === 2) return "grid-cols-2 w-full"; 
+      if (count === 4) return "grid-cols-2 max-w-[500px]"; 
       return "grid-cols-3 max-w-[500px]"; 
   };
 
@@ -223,7 +262,14 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </>
               ) : (
                 <button 
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                      setIsEditing(true);
+                      // Re-sync state in case props changed
+                      setEditImages(post.images && post.images.length > 0 
+                        ? post.images 
+                        : (post.mediaUrl && post.mediaType === 'image' ? [post.mediaUrl] : [])
+                      );
+                  }}
                   className="p-2 rounded hover:bg-white/10 text-blue-300 transition-colors"
                   title="编辑帖子"
                 >
@@ -249,13 +295,55 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      {/* Media Section - 九宫格展示区域 */}
-      {(post.mediaType === 'video' && post.mediaUrl) || displayImages.length > 0 ? (
-        <div className="w-full bg-black/20 p-2 flex justify-center">
-            {post.mediaType === 'video' && post.mediaUrl ? (
-                <video src={post.mediaUrl} controls className="w-full h-auto max-h-[80vh] rounded" />
-            ) : (
-                // 多图：九宫格布局
+      {/* Media Section */}
+      <div className="w-full bg-black/20 p-2 flex flex-col items-center">
+          {/* 1. Video Handling */}
+          {post.mediaType === 'video' && post.mediaUrl && !isEditing && (
+               <video src={post.mediaUrl} controls className="w-full h-auto max-h-[80vh] rounded" />
+          )}
+
+          {/* 2. Image Editing Mode */}
+          {isEditing && post.mediaType === 'image' ? (
+              <div className="w-full space-y-4">
+                   <div className="grid grid-cols-3 gap-2 p-2 bg-black/40 rounded-lg">
+                       {editImages.map((img, idx) => (
+                           <div key={idx} className="relative group/edit-img aspect-square">
+                               <img src={img} className="w-full h-full object-cover rounded border border-white/20" />
+                               <button 
+                                 onClick={() => handleRemoveImage(idx)}
+                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-transform hover:scale-110"
+                                 title="删除这张图"
+                               >
+                                   <MinusCircle size={14} />
+                               </button>
+                           </div>
+                       ))}
+                       {editImages.length === 0 && (
+                           <div className="col-span-3 text-center text-gray-400 text-sm py-4">
+                               暂无图片，请添加
+                           </div>
+                       )}
+                   </div>
+                   
+                   <div className="flex gap-2 items-center bg-white/10 p-2 rounded-lg">
+                       <input 
+                          type="text"
+                          value={newImageInput}
+                          onChange={(e) => setNewImageInput(e.target.value)}
+                          placeholder="文件名 (如: love.jpg)"
+                          className="flex-1 bg-transparent text-sm text-white placeholder-gray-400 outline-none border-b border-white/30 focus:border-green-400 px-1 py-1"
+                       />
+                       <button 
+                          onClick={handleAddImage}
+                          className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors"
+                       >
+                          <PlusCircle size={14} /> 添加
+                       </button>
+                   </div>
+              </div>
+          ) : (
+              /* 3. Image View Mode */
+             post.mediaType === 'image' && displayImages.length > 0 && (
                 <div className={`grid gap-1.5 w-full justify-center ${getGridClass(displayImages.length)}`}>
                     {displayImages.map((img, idx) => (
                         <SafeImage 
@@ -267,9 +355,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                         />
                     ))}
                 </div>
-            )}
-        </div>
-      ) : null}
+             )
+          )}
+      </div>
 
       {/* Content */}
       <div className="p-6">
