@@ -159,6 +159,19 @@ export const INITIAL_CHAPTERS = [
         ],
         "mediaType": "image",
         "likes": 0
+      },
+      {
+        "id": "p-1763987861591-1ksjl8nck",
+        "title": "天晴啦🌞",
+        "content": "笑一笑😄跳一跳🕺🏽\n快乐女孩乐逍遥\n天晴了空气中🌈\n都是成长的味道",
+        "date": "2025-11-24",
+        "mediaUrl": "images/1_5_1.jpg",
+        "images": [
+          "images/1_5_1.jpg",
+          "images/1_5_2.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
       }
     ],
     "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
