@@ -146,6 +146,32 @@ export const INITIAL_CHAPTERS = [
         "images": [],
         "mediaType": "image",
         "likes": 0
+      },
+      {
+        "id": "p-1763987064887-6h6dfw7r3",
+        "title": "下雨啦🌧",
+        "content": "笑一笑🥰跳一跳💃🏻\n快乐女孩没烦恼\n下雨了洗个澡🌦\n没有什么大不了",
+        "date": "2025-11-24",
+        "mediaUrl": "images/1_4_1.jpg",
+        "images": [
+          "images/1_4_1.jpg",
+          "images/1_4_2.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1763987484282-lw1p8oc8g",
+        "title": "天晴啦🌞",
+        "content": "笑一笑😄跳一跳🕺🏽\n快乐女孩乐逍遥\n天晴了空气中🌈\n都是成长的味道",
+        "date": "2025-11-24",
+        "mediaUrl": "images/1_5_1.jpg",
+        "images": [
+          "images/1_5_1.jpg",
+          "images/1_5_2.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
       }
     ],
     "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
