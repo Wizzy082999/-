@@ -1,28 +1,7 @@
 
 export type WeatherType = 'snow' | 'rain' | 'sunny' | 'starry';
 
-// 使用换行可以让代码更清晰
-export type DecorationType = 
-  | 'santa' 
-  | 'tree' 
-  | 'sock' 
-  | 'cat' 
-  | 'dog' 
-  | 'star' 
-  | 'gift' 
-  | 'rainbow' 
-  | 'flower' 
-  | 'moon' 
-  | 'snowman' 
-  | 'bell' 
-  | 'lantern' 
-  | 'firecracker' 
-  | 'umbrella' 
-  | 'milk'
-  | 'flash'      
-  | 'beatheart'  
-  | 'popcorn'    
-  | 'film';      
+export type DecorationType = 'santa' | 'tree' | 'sock' | 'cat' | 'dog' | 'star' | 'gift' | 'rainbow' | 'flower' | 'moon' | 'snowman' | 'bell' | 'lantern' | 'firecracker' | 'umbrella' | 'milk' | 'flash' | 'beatheart'| 'popcorn'|'film';
 
 export interface Decoration {
   id: string;
@@ -30,7 +9,7 @@ export interface Decoration {
   x: number; // Percentage (0-100)
   y: number; // Percentage (0-100)
   scale: number;
-  visible: boolean; 
+  visible: boolean; // Keep for compatibility, though we mostly use add/remove now
 }
 
 export interface MemoryPost {
@@ -38,10 +17,10 @@ export interface MemoryPost {
   title: string;
   date: string;
   content: string;
-  mediaUrl?: string; // 兼容旧的单图/视频模式
-  images?: string[]; // 新增：支持多张图片链接，用于九宫格展示
+  mediaUrl?: string; // Optional now
   mediaType: 'image' | 'video';
   likes: number;
+  // Comments removed as requested
 }
 
 export interface Chapter {
