@@ -6,7 +6,7 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw, Video } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
@@ -64,10 +64,11 @@ const App: React.FC = () => {
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostDate, setNewPostDate] = useState('');
-  const [newPostMedia, setNewPostMedia] = useState<File | null>(null);
-  const [newPostMediaType, setNewPostMediaType] = useState<'image' | 'video'>('image');
-  // New field for manual URL input (crucial for deployment)
-  const [newPostMediaUrlInput, setNewPostMediaUrlInput] = useState('');
+  
+  // Updated Post Form States for Multi-Image
+  const [newPostType, setNewPostType] = useState<'image' | 'video'>('image');
+  const [newPostFiles, setNewPostFiles] = useState<FileList | null>(null);
+  const [newPostManualInput, setNewPostManualInput] = useState('');
 
   // Form state for Chapter
   const [chapterFormMode, setChapterFormMode] = useState<'create' | 'edit'>('create');
@@ -89,6 +90,13 @@ const App: React.FC = () => {
 
   // Prevent overwriting localStorage on initial load
   const isFirstRender = useRef(true);
+
+  // Set default date when modal opens
+  useEffect(() => {
+    if (isPostModalOpen) {
+        setNewPostDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [isPostModalOpen]);
 
   // Save to localStorage whenever chapters change
   useEffect(() => {
@@ -371,17 +379,16 @@ const App: React.FC = () => {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'bgm') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     if (type === 'media') {
-      setNewPostMedia(file);
-      setNewPostMediaType(file.type.startsWith('video') ? 'video' : 'image');
-      // Clear manual input if file is selected to avoid confusion
-      setNewPostMediaUrlInput('');
+      setNewPostFiles(files);
+      // Determine type based on first file
+      setNewPostType(files[0].type.startsWith('video') ? 'video' : 'image');
+      setNewPostManualInput('');
     } else {
-      setChapterFormBGM(file);
-      // Clear manual input if file is selected
+      setChapterFormBGM(files[0]);
       setChapterFormBgmUrlInput('');
     }
   };
@@ -390,19 +397,31 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!currentChapter) return;
     
-    // --- SMART PATH LOGIC (LAZY MODE) ---
-    let mediaUrl = newPostMediaUrlInput.trim();
-    
-    if (mediaUrl && !mediaUrl.startsWith('http')) {
-        let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
-        try { filename = decodeURIComponent(filename); } catch(e){}
-        const encodedFilename = encodeURIComponent(filename);
-        // Use relative path 'images/'
-        mediaUrl = `images/${encodedFilename}`;
-    }
+    // --- SMART PATH LOGIC ---
+    let finalMediaUrl = '';
+    const images: string[] = [];
 
-    if (!mediaUrl && newPostMedia) {
-        mediaUrl = URL.createObjectURL(newPostMedia);
+    // Case 1: Manual Input (Lazy Mode)
+    if (newPostManualInput) {
+        let mediaUrl = newPostManualInput.trim();
+        if (mediaUrl && !mediaUrl.startsWith('http')) {
+            let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
+            try { filename = decodeURIComponent(filename); } catch(e){}
+            const encodedFilename = encodeURIComponent(filename);
+            mediaUrl = `images/${encodedFilename}`;
+        }
+        finalMediaUrl = mediaUrl;
+        images.push(mediaUrl);
+    } 
+    // Case 2: File Upload (Multi-select)
+    else if (newPostFiles && newPostFiles.length > 0) {
+        Array.from(newPostFiles).forEach(file => {
+            images.push(URL.createObjectURL(file));
+        });
+        // Legacy support: use first image as mediaUrl
+        if (images.length > 0) {
+            finalMediaUrl = images[0];
+        }
     }
 
     const newPost: MemoryPost = {
@@ -410,8 +429,9 @@ const App: React.FC = () => {
       title: newPostTitle,
       content: newPostContent,
       date: newPostDate || new Date().toISOString().split('T')[0],
-      mediaUrl: mediaUrl || undefined,
-      mediaType: newPostMediaType,
+      mediaUrl: finalMediaUrl || undefined,
+      images: images, // Store all images
+      mediaType: newPostType,
       likes: 0
     };
 
@@ -425,9 +445,9 @@ const App: React.FC = () => {
     setIsPostModalOpen(false);
     setNewPostTitle('');
     setNewPostContent('');
-    setNewPostDate('');
-    setNewPostMedia(null);
-    setNewPostMediaUrlInput('');
+    setNewPostDate(new Date().toISOString().split('T')[0]);
+    setNewPostFiles(null);
+    setNewPostManualInput('');
   };
 
   // --- Export Data Logic ---
@@ -916,6 +936,7 @@ const App: React.FC = () => {
                     value={newPostTitle}
                     onChange={e => setNewPostTitle(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-green outline-none"
+                    placeholder="例如：第一次去迪士尼"
                   />
                 </div>
                 <div>
@@ -938,10 +959,11 @@ const App: React.FC = () => {
                   value={newPostContent}
                   onChange={e => setNewPostContent(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-green outline-none resize-none"
+                  placeholder="写下那天的美好回忆..."
                 />
               </div>
 
-              {/* Enhanced Image Input Section for Deployment */}
+              {/* Enhanced Image Input Section */}
               <div>
                  <label className="block text-sm font-bold text-gray-600 mb-2">图片/视频来源 (二选一)</label>
                  
@@ -956,14 +978,14 @@ const App: React.FC = () => {
                            <span className="font-bold text-green-700">使用方法：</span><br/>
                            1. 把图片传到 GitHub 的 public/images/ 文件夹。<br/>
                            2. 下面只需填 <span className="font-bold">图片名</span> (如: <code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
-                           3. 我会自动帮你处理路径！
+                           3. 我会自动帮你处理路径！(目前暂不支持多图手动输入)
                         </p>
                         <input 
                             type="text"
-                            value={newPostMediaUrlInput}
+                            value={newPostManualInput}
                             onChange={(e) => {
-                                setNewPostMediaUrlInput(e.target.value);
-                                setNewPostMedia(null); // Clear file if manual URL is used
+                                setNewPostManualInput(e.target.value);
+                                setNewPostFiles(null); // Clear file if manual URL is used
                             }}
                             placeholder="photo.jpg"
                             className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
@@ -977,26 +999,27 @@ const App: React.FC = () => {
                      </div>
 
                      {/* Temporary Upload Option */}
-                     <div className={`border-2 border-dashed rounded-xl p-3 transition-colors relative group flex items-center gap-3 ${newPostMedia ? 'border-christmas-gold bg-yellow-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                     <div className={`border-2 border-dashed rounded-xl p-3 transition-colors relative group flex items-center gap-3 ${newPostFiles ? 'border-christmas-gold bg-yellow-50' : 'border-gray-300 hover:border-gray-400'}`}>
                         <div className="bg-gray-200 p-2 rounded-full shrink-0">
                             <Upload size={20} className="text-gray-500" />
                         </div>
                         <div className="flex-1 min-w-0">
                              <span className="text-sm font-medium text-gray-700 block truncate">
-                                {newPostMedia ? newPostMedia.name : "方案二：从电脑上传 (临时预览)"}
+                                {newPostFiles && newPostFiles.length > 0 ? `已选择 ${newPostFiles.length} 个文件` : "方案二：从电脑上传 (支持多选)"}
                              </span>
                              <p className="text-xs text-red-400 mt-0.5">⚠️ 注意：刷新页面后图片会消失！</p>
                              <input 
                                 type="file" 
+                                multiple
                                 accept="image/*,video/*"
                                 onChange={(e) => handleFileChange(e, 'media')}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                         </div>
-                        {newPostMedia && (
+                        {newPostFiles && (
                             <button 
                                 type="button"
-                                onClick={() => setNewPostMedia(null)}
+                                onClick={() => setNewPostFiles(null)}
                                 className="p-1 text-gray-400 hover:text-red-500 z-10"
                             >
                                 <X size={16} />
