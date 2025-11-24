@@ -6,51 +6,68 @@ import { PostCard } from './components/PostCard';
 import { DIYPanel } from './components/DIYPanel';
 import { AppMode, Chapter, MemoryPost, WeatherType, DecorationType, Decoration } from './types';
 import { INITIAL_CHAPTERS, INITIAL_DECORATIONS } from './constants';
-import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw, Video } from 'lucide-react';
+import { Edit2, Heart, Settings, X, Upload, Music, Plus, BookOpen, ArrowDownUp, Volume2, VolumeX, Pencil, Trash2, AlertTriangle, Download, Copy, EyeOff, Info, Image as ImageIcon, PlayCircle, Gift, ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
 
 const App: React.FC = () => {
   // Mode State
+  // 🎄 默认为 'viewer' (浏览模式)，给她看的时候是纯净的
   const [mode, setMode] = useState<AppMode>('viewer');
+  
+  // Start Screen State (For Autoplay and Volume Control)
   const [showStartScreen, setShowStartScreen] = useState(true);
+  
+  // Admin State - Default to FALSE. 
+  // Click the heart icon 5 times to unlock admin features.
   const [isAdmin, setIsAdmin] = useState(false); 
+  
   const [adminUnlockCount, setAdminUnlockCount] = useState(0);
+  
+  // Easter Egg State
   const [giantHeartVisible, setGiantHeartVisible] = useState(false);
 
   // State: Chapters
+  // 🚀 修改逻辑：优先读取代码里的 INITIAL_CHAPTERS，确保部署后所有人看到的是最新的
+  // 不再自动读取 localStorage，避免旧缓存导致内容不更新
   const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
 
   const [currentChapterId, setCurrentChapterId] = useState<string>(() => {
+     // Also try to restore the last viewed chapter
      return chapters[0]?.id || 'c1';
   });
 
   const [isDIYPanelOpen, setIsDIYPanelOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false); 
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false); // New Export Modal
+
+  // Delete Modal State
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'post' | 'chapter', id: string } | null>(null);
 
   // Local state for Hero Edit Modal
   const [heroEditTitle, setHeroEditTitle] = useState("");
   const [heroEditSubtitle, setHeroEditSubtitle] = useState("");
   const [isEditingHero, setIsEditingHero] = useState(false);
+  
+  // Sort State
   const [sortAscending, setSortAscending] = useState(true); 
 
   // Audio Ref
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // 🚀 新增：滚动容器 Ref，用于控制页面滚动
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted, but browser policy might block
   const [autoPlayFailed, setAutoPlayFailed] = useState(false);
 
   // Form state for new post
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostDate, setNewPostDate] = useState('');
-  
-  // Updated Post Form States for Multi-Image
-  const [newPostType, setNewPostType] = useState<'image' | 'video'>('image');
-  const [newPostFiles, setNewPostFiles] = useState<FileList | null>(null);
-  const [newPostManualInput, setNewPostManualInput] = useState('');
+  const [newPostMedia, setNewPostMedia] = useState<File | null>(null);
+  const [newPostMediaType, setNewPostMediaType] = useState<'image' | 'video'>('image');
+  // New field for manual URL input (crucial for deployment)
+  const [newPostMediaUrlInput, setNewPostMediaUrlInput] = useState('');
 
   // Form state for Chapter
   const [chapterFormMode, setChapterFormMode] = useState<'create' | 'edit'>('create');
@@ -58,19 +75,25 @@ const App: React.FC = () => {
   const [chapterFormTitle, setChapterFormTitle] = useState('');
   const [chapterFormBGM, setChapterFormBGM] = useState<File | null>(null);
   const [chapterFormBgmUrlInput, setChapterFormBgmUrlInput] = useState('');
+  // For previewing BGM in the modal
   const [previewBgmUrl, setPreviewBgmUrl] = useState('');
 
   const currentChapter = chapters.find(c => c.id === currentChapterId) || chapters[0];
   const displayHeroTitle = currentChapter?.heroTitle || "Merry Christmas";
   const displayHeroSubtitle = currentChapter?.heroSubtitle || "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️";
 
+  // Calculate Navigation Indices
   const currentChapterIndex = chapters.findIndex(c => c.id === currentChapterId);
   const prevChapter = chapters[currentChapterIndex - 1];
   const nextChapter = chapters[currentChapterIndex + 1];
 
+  // Prevent overwriting localStorage on initial load
   const isFirstRender = useRef(true);
 
+  // Save to localStorage whenever chapters change
   useEffect(() => {
+    // 🚀 关键修改：第一次渲染时不保存，防止把空状态或代码状态覆盖到本地缓存中
+    // 只有当你真正开始操作（导致 chapters 变化）时，才写入本地缓存
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -78,12 +101,15 @@ const App: React.FC = () => {
     localStorage.setItem('christmas_chapters', JSON.stringify(chapters));
   }, [chapters]);
 
+  // 🚀 新增：每次切换章节时，强制回到顶部
+  // 因为 overflow 是设在内部 div 上的，window.scrollTo 不起作用，必须操作 Ref
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [currentChapterId]);
 
+  // 🚀 新增：手动恢复草稿功能
   const handleRecoverDraft = () => {
     const saved = localStorage.getItem('christmas_chapters');
     if (saved) {
@@ -91,6 +117,7 @@ const App: React.FC = () => {
         try {
           const parsed = JSON.parse(saved);
           setChapters(parsed);
+          // 如果当前章节在新数据里不存在，重置为第一个
           if (!parsed.find((c: Chapter) => c.id === currentChapterId)) {
              setCurrentChapterId(parsed[0]?.id || 'c1');
           }
@@ -112,447 +139,1122 @@ const App: React.FC = () => {
     }
   }, [isEditingHero, displayHeroTitle, displayHeroSubtitle]);
 
+  // --- AUDIO LOGIC 1: Handle Source Switching (Chapter Change) ---
   useEffect(() => {
     if (!audioRef.current || !currentChapter) return;
-    audioRef.current.volume = 0.5; 
 
-    const newBgm = currentChapter.bgmUrl;
-    const currentSrc = decodeURIComponent(audioRef.current.src || "").split(window.location.origin)[1];
+    // Default volume
+    audioRef.current.volume = 0.3;
+
+    const targetUrl = currentChapter.bgmUrl;
     
-    if (newBgm && currentSrc !== newBgm && !newBgm.includes('undefined')) {
-       audioRef.current.src = newBgm;
-       if (!showStartScreen && !isMuted) {
-         const playPromise = audioRef.current.play();
-         if (playPromise !== undefined) {
-            playPromise.catch(() => setAutoPlayFailed(true));
-         }
-       }
-    } else if (!newBgm) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-    }
-  }, [currentChapterId, showStartScreen]);
+    if (targetUrl) {
+        const currentSrc = audioRef.current.src;
+        // Robust check to see if it's the same song
+        const isSameSource = currentSrc.endsWith(targetUrl) || currentSrc === targetUrl || (currentSrc.includes(encodeURIComponent(targetUrl)));
 
+        if (!isSameSource) {
+            console.log("Switching BGM to:", targetUrl);
+            audioRef.current.src = targetUrl;
+            
+            // Only auto-play if we are past the start screen and audio is enabled
+            if (!showStartScreen && !isMuted) {
+                audioRef.current.play().catch(err => {
+                    console.warn("Auto-play blocked:", err);
+                    setAutoPlayFailed(true);
+                });
+            }
+        }
+        // If it IS the same source, we do nothing here. 
+        // We let the play/pause logic below handle the state.
+    } else {
+        // No BGM for this chapter
+        audioRef.current.pause();
+        audioRef.current.src = "";
+    }
+  }, [currentChapterId, currentChapter?.bgmUrl]);
+
+  // --- AUDIO LOGIC 2: Handle Play/Pause Toggle (Resume) ---
   useEffect(() => {
     if (!audioRef.current) return;
+    
+    // Do not attempt to play if still on start screen
+    if (showStartScreen) return;
+
     if (isMuted) {
-      audioRef.current.pause();
+        // Just pause. HTML5 Audio keeps the current timestamp.
+        audioRef.current.pause();
     } else {
-       if (!showStartScreen && audioRef.current.src) {
-           audioRef.current.play().catch(() => setAutoPlayFailed(true));
-       }
+        // Resume.
+        // Only try to play if we have a valid source and it's currently paused
+        if (audioRef.current.src && audioRef.current.paused) {
+            audioRef.current.play().catch(err => {
+                console.warn("Resume failed:", err);
+                setAutoPlayFailed(true);
+            });
+        }
     }
   }, [isMuted, showStartScreen]);
 
-  const handleStartExperience = () => {
-     setShowStartScreen(false);
-     if (audioRef.current && currentChapter.bgmUrl) {
-         audioRef.current.src = currentChapter.bgmUrl;
-         audioRef.current.play().then(() => {
-             setAutoPlayFailed(false);
-         }).catch(() => {
-             setAutoPlayFailed(true);
-         });
-     }
+  // Update preview URL when input changes
+  useEffect(() => {
+      if (chapterFormBGM) {
+          setPreviewBgmUrl(URL.createObjectURL(chapterFormBGM));
+      } else if (chapterFormBgmUrlInput) {
+          // Logic to generate preview path
+          let filename = chapterFormBgmUrlInput.trim().replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+          try { filename = decodeURIComponent(filename); } catch(e){}
+          const encodedFilename = encodeURIComponent(filename);
+          // Use relative path 'bgm/' instead of absolute '/bgm/' to support GitHub Pages subdirectories
+          setPreviewBgmUrl(`bgm/${encodedFilename}`);
+      } else {
+          setPreviewBgmUrl('');
+      }
+  }, [chapterFormBgmUrlInput, chapterFormBGM]);
+
+
+  // --- Unlock Admin ---
+  const handleUnlockAdmin = () => {
+      if (isAdmin) return; // Already unlocked
+      
+      const newCount = adminUnlockCount + 1;
+      setAdminUnlockCount(newCount);
+      
+      if (newCount === 5) {
+          setIsAdmin(true);
+          setMode('editor');
+          setAdminUnlockCount(0); // Reset counter
+          alert("管理员模式已解锁！❤️\n欢迎回来，开始编辑吧！");
+      }
+  };
+  
+  // --- Start App (Unwrap Gift) ---
+  const handleStartApp = () => {
+      setShowStartScreen(false);
+      if (audioRef.current && currentChapter?.bgmUrl) {
+          // 🎵 Double check volume is low before playing
+          audioRef.current.volume = 0.3; 
+          audioRef.current.play().then(() => {
+              setAutoPlayFailed(false);
+              setIsMuted(false);
+          }).catch(e => {
+              console.error("Play failed", e);
+              setAutoPlayFailed(true);
+          });
+      }
   };
 
-  const handleWeatherChange = (weather: WeatherType) => {
-    const updatedChapters = chapters.map(c => c.id === currentChapterId ? { ...c, weather } : c);
-    setChapters(updatedChapters);
+  // --- Trigger Giant Heart ---
+  const triggerGiantHeart = () => {
+      setGiantHeartVisible(true);
+      setTimeout(() => {
+          setGiantHeartVisible(false);
+      }, 3000); // Show for 3 seconds
+  };
+
+  // --- Actions ---
+  
+  // 🚀 核心修复：统一的章节切换函数
+  const switchChapter = (chapterId: string) => {
+      setCurrentChapterId(chapterId);
+      setSortAscending(true); // 切换章节时强制重置为“时间正序”（最早在前）
+      // 滚动逻辑已经移到 useEffect 中，这里不需要再调用 window.scrollTo
+  };
+
+  const updateChapter = (chapterId: string, data: Partial<Chapter>) => {
+    setChapters(prev => prev.map(c => c.id === chapterId ? { ...c, ...data } : c));
+  };
+
+  const handleSaveHeroText = () => {
+    updateChapter(currentChapterId, {
+      heroTitle: heroEditTitle,
+      heroSubtitle: heroEditSubtitle
+    });
+    setIsEditingHero(false);
+  };
+
+  const handleDecorationUpdate = (id: string, newPos: { x: number; y: number }) => {
+    if (!currentChapter) return;
+    const updatedDecos = currentChapter.decorations.map(d => d.id === id ? { ...d, ...newPos } : d);
+    updateChapter(currentChapterId, { decorations: updatedDecos });
   };
 
   const handleAddDecoration = (type: DecorationType) => {
-    const newDecoration: Decoration = {
-      id: `d-${Date.now()}`,
-      type, x: 50, y: 50, scale: type === 'tree' ? 2.0 : 1.0, visible: true
-    };
-    const updatedChapters = chapters.map(c => c.id === currentChapterId ? { ...c, decorations: [...c.decorations, newDecoration] } : c);
-    setChapters(updatedChapters);
-  };
+    if (!currentChapter) return;
+    
+    let defaultY = 50;
+    let defaultX = 50;
 
-  const handleUpdateDecoration = (id: string, newPos: { x: number; y: number }) => {
-    const updatedChapters = chapters.map(c => c.id === currentChapterId ? {
-            ...c, decorations: c.decorations.map(d => d.id === id ? { ...d, ...newPos } : d)
-          } : c
-    );
-    setChapters(updatedChapters);
-  };
-
-  const handleRemoveDecoration = (type: DecorationType) => {
-     const updatedChapters = chapters.map(c => {
-         if (c.id !== currentChapterId) return c;
-         const indices = c.decorations.map((d, index) => d.type === type ? index : -1).filter(index => index !== -1);
-         if (indices.length === 0) return c;
-         const lastIndex = indices[indices.length - 1];
-         const newDecorations = [...c.decorations];
-         newDecorations.splice(lastIndex, 1);
-         return { ...c, decorations: newDecorations };
-     });
-     setChapters(updatedChapters);
-  };
-
-  const openCreateChapterModal = () => {
-      setChapterFormMode('create');
-      setEditingChapterId(null);
-      setChapterFormTitle('');
-      setChapterFormBgmUrlInput('');
-      setPreviewBgmUrl('');
-      setIsChapterModalOpen(true);
-  };
-
-  const openEditChapterModal = (chapter: Chapter) => {
-      setChapterFormMode('edit');
-      setEditingChapterId(chapter.id);
-      setChapterFormTitle(chapter.title);
-      setChapterFormBgmUrlInput(chapter.bgmUrl || '');
-      setPreviewBgmUrl(chapter.bgmUrl || '');
-      setIsChapterModalOpen(true);
-  };
-
-  const handleSaveChapter = () => {
-      if (!chapterFormTitle) return alert("请输入章节标题");
-      let finalBgmUrl = chapterFormBgmUrlInput;
-      if (chapterFormBGM) finalBgmUrl = `/bgm/${chapterFormBGM.name}`;
-      if (finalBgmUrl && !finalBgmUrl.startsWith('http') && !finalBgmUrl.startsWith('/')) {
-          finalBgmUrl = `/bgm/${finalBgmUrl}`;
-      }
-
-      if (chapterFormMode === 'create') {
-          const newChapter: Chapter = {
-              id: `c-${Date.now()}`,
-              title: chapterFormTitle,
-              heroTitle: "Merry Christmas",
-              heroSubtitle: "新的篇章",
-              weather: 'snow',
-              decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
-              bgmUrl: finalBgmUrl,
-              posts: []
-          };
-          setChapters([...chapters, newChapter]);
-          setCurrentChapterId(newChapter.id);
-      } else if (chapterFormMode === 'edit' && editingChapterId) {
-          setChapters(chapters.map(c => c.id === editingChapterId ? {
-              ...c, title: chapterFormTitle, bgmUrl: finalBgmUrl
-          } : c));
-      }
-      setIsChapterModalOpen(false);
-      setChapterFormBGM(null);
-  };
-
-  const handleDeleteChapter = (id: string) => {
-      if (chapters.length <= 1) {
-          alert("至少保留一个章节哦！");
-          setDeleteConfirm(null);
-          return;
-      }
-      const newChapters = chapters.filter(c => c.id !== id);
-      setChapters(newChapters);
-      if (currentChapterId === id) setCurrentChapterId(newChapters[0].id);
-      setDeleteConfirm(null);
-  };
-
-  // --- POST MANAGEMENT (Updated for Multi-Image) ---
-  const handleCreatePost = () => {
-    if (!newPostTitle || !newPostDate) {
-      alert("标题和日期是必填的哦！");
-      return;
-    }
-
-    let finalMediaUrl = '';
-    let finalImages: string[] = [];
-
-    if (newPostType === 'video') {
-       if (newPostFiles && newPostFiles[0]) {
-         finalMediaUrl = URL.createObjectURL(newPostFiles[0]);
-       } else if (newPostManualInput) {
-         finalMediaUrl = newPostManualInput.trim();
-       }
+    if (type === 'santa' || type === 'moon' || type === 'rainbow') {
+        defaultY = 15; 
+        defaultX = Math.random() * 80 + 10;
     } else {
-       // Image Logic: Handle Multiple
-       if (newPostFiles && newPostFiles.length > 0) {
-          // Temporary: Multiple files selected via file input
-          Array.from(newPostFiles).forEach(file => {
-             finalImages.push(URL.createObjectURL(file));
-          });
-       } else if (newPostManualInput) {
-          // Permanent: Manual input (comma separated)
-          const urls = newPostManualInput.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0);
-          finalImages = urls;
-       }
-       // Backward compatibility: set first image as main mediaUrl
-       if (finalImages.length > 0) finalMediaUrl = finalImages[0];
+        defaultY = Math.random() * 40 + 50; 
+        defaultX = Math.random() * 80 + 10;
     }
 
-    const newPost: MemoryPost = {
-      id: Date.now().toString(),
-      title: newPostTitle,
-      date: newPostDate,
-      content: newPostContent,
-      mediaUrl: finalMediaUrl,
-      images: finalImages.length > 0 ? finalImages : undefined,
-      mediaType: newPostType,
-      likes: 0
+    const newDeco: Decoration = {
+        id: `deco-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        type,
+        x: defaultX,
+        y: defaultY,
+        scale: 1,
+        visible: true
     };
 
-    const updatedChapters = chapters.map(c => 
-      c.id === currentChapterId ? { ...c, posts: [newPost, ...c.posts] } : c
-    );
-    setChapters(updatedChapters);
-    setIsPostModalOpen(false);
-    setNewPostTitle(''); setNewPostContent(''); setNewPostDate(''); setNewPostFiles(null); setNewPostManualInput('');
-  };
-
-  const handleDeletePost = (postId: string) => {
-     const updatedChapters = chapters.map(c => 
-      c.id === currentChapterId ? { ...c, posts: c.posts.filter(p => p.id !== postId) } : c
-    );
-    setChapters(updatedChapters);
-    setDeleteConfirm(null);
-  };
-  
-  const handleUpdatePost = (postId: string, data: Partial<MemoryPost>) => {
-      const updatedChapters = chapters.map(c => 
-          c.id === currentChapterId ? { 
-                ...c, posts: c.posts.map(p => p.id === postId ? { ...p, ...data } : p) 
-              } : c
-      );
-      setChapters(updatedChapters);
-  };
-
-  const handleLikePost = (postId: string) => {
-    const updatedChapters = chapters.map(c => 
-      c.id === currentChapterId ? {
-            ...c, posts: c.posts.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p)
-          } : c
-    );
-    setChapters(updatedChapters);
-  };
-
-  const handleSaveHeroEdit = () => {
-    const updatedChapters = chapters.map(c => 
-      c.id === currentChapterId ? { ...c, heroTitle: heroEditTitle, heroSubtitle: heroEditSubtitle } : c
-    );
-    setChapters(updatedChapters);
-    setIsEditingHero(false);
-  }
-
-  const handleExportData = () => {
-    const dataStr = JSON.stringify(chapters, null, 2);
-    navigator.clipboard.writeText(dataStr).then(() => {
-        alert("JSON 代码已复制到剪贴板！\n\n请打开 constants.ts 文件，替换 INITIAL_CHAPTERS 的内容，这样你的修改就能永久保存了。");
-        setIsExportModalOpen(false);
+    updateChapter(currentChapterId, { 
+        decorations: [...currentChapter.decorations, newDeco] 
     });
   };
 
-  const toggleAdmin = () => {
-      setAdminUnlockCount(prev => prev + 1);
-      if (adminUnlockCount + 1 >= 5) {
-          setIsAdmin(!isAdmin);
-          setAdminUnlockCount(0);
-          alert(isAdmin ? "已退出管理员模式" : "管理员模式已开启！");
+  const handleRemoveDecoration = (type: DecorationType) => {
+      if (!currentChapter) return;
+      const reversed = [...currentChapter.decorations].reverse();
+      const indexToRemoveInReversed = reversed.findIndex(d => d.type === type);
+      
+      if (indexToRemoveInReversed !== -1) {
+          const idToRemove = reversed[indexToRemoveInReversed].id;
+          updateChapter(currentChapterId, {
+              decorations: currentChapter.decorations.filter(d => d.id !== idToRemove)
+          });
       }
   };
 
-  const handleTriggerEasterEgg = () => {
-      setGiantHeartVisible(true);
-      setTimeout(() => setGiantHeartVisible(false), 3000);
+  const handleWeatherChange = (w: WeatherType) => {
+    updateChapter(currentChapterId, { weather: w });
   };
 
-  const sortedPosts = [...currentChapter.posts].sort((a, b) => {
-      return sortAscending 
-        ? new Date(b.date).getTime() - new Date(a.date).getTime()
-        : new Date(a.date).getTime() - new Date(b.date).getTime();
-  });
+  const handleLikePost = (postId: string) => {
+    setChapters(prev => prev.map(c => ({
+      ...c,
+      posts: c.posts.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p)
+    })));
+  };
 
-  if (showStartScreen) {
-    return (
-      <div className="fixed inset-0 z-[999] bg-slate-900 flex flex-col items-center justify-center text-center p-4">
-         <WeatherLayer weather="starry" />
-         <div className="relative z-10 animate-fade-in-up">
-             <h1 className="font-handwriting text-6xl text-christmas-red mb-6 drop-shadow-[0_0_15px_rgba(212,36,38,0.8)]">To My Love</h1>
-             <p className="text-gray-300 mb-12 font-cute text-xl max-w-md mx-auto leading-relaxed">准备好进入我们的回忆世界了吗？<br/>戴上耳机，体验最佳效果 🎧</p>
-             <button onClick={handleStartExperience} className="bg-christmas-green text-white px-8 py-3 rounded-full text-xl font-bold shadow-lg hover:scale-110 transition-all flex items-center gap-2 mx-auto">
-                <PlayCircle size={24} /> 开始旅程
-             </button>
-         </div>
-      </div>
-    );
+  const handleDeletePostRequest = (postId: string) => {
+    setDeleteConfirm({ type: 'post', id: postId });
+  };
+
+  const handleDeleteChapterRequest = (chapterId: string) => {
+    setDeleteConfirm({ type: 'chapter', id: chapterId });
+  };
+
+  const executeDelete = () => {
+    if (!deleteConfirm) return;
+    const { type, id } = deleteConfirm;
+
+    if (type === 'post') {
+       setChapters(prevChapters => prevChapters.map(chapter => ({
+        ...chapter,
+        posts: chapter.posts.filter(p => p.id !== id)
+      })));
+    } else if (type === 'chapter') {
+      if (chapters.length <= 1) {
+        alert("至少需要保留一个篇章哦！");
+        setDeleteConfirm(null);
+        return;
+      }
+      const newChapters = chapters.filter(c => c.id !== id);
+      if (currentChapterId === id) {
+        setCurrentChapterId(newChapters[0].id);
+      }
+      setChapters(newChapters);
+    }
+    setDeleteConfirm(null);
+  };
+
+  const handleUpdatePost = (postId: string, data: Partial<MemoryPost>) => {
+    setChapters(prev => prev.map(c => ({
+      ...c,
+      posts: c.posts.map(p => p.id === postId ? { ...p, ...data } : p)
+    })));
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'bgm') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'media') {
+      setNewPostMedia(file);
+      setNewPostMediaType(file.type.startsWith('video') ? 'video' : 'image');
+      // Clear manual input if file is selected to avoid confusion
+      setNewPostMediaUrlInput('');
+    } else {
+      setChapterFormBGM(file);
+      // Clear manual input if file is selected
+      setChapterFormBgmUrlInput('');
+    }
+  };
+
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentChapter) return;
+    
+    // --- SMART PATH LOGIC (LAZY MODE) ---
+    let mediaUrl = newPostMediaUrlInput.trim();
+    
+    if (mediaUrl && !mediaUrl.startsWith('http')) {
+        let filename = mediaUrl.replace(/^(\/)?(public\/)?(images\/)?/i, '');
+        try { filename = decodeURIComponent(filename); } catch(e){}
+        const encodedFilename = encodeURIComponent(filename);
+        // Use relative path 'images/'
+        mediaUrl = `images/${encodedFilename}`;
+    }
+
+    if (!mediaUrl && newPostMedia) {
+        mediaUrl = URL.createObjectURL(newPostMedia);
+    }
+
+    const newPost: MemoryPost = {
+      id: `p-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: newPostTitle,
+      content: newPostContent,
+      date: newPostDate || new Date().toISOString().split('T')[0],
+      mediaUrl: mediaUrl || undefined,
+      mediaType: newPostMediaType,
+      likes: 0
+    };
+
+    setChapters(prev => prev.map(c => {
+      if (c.id === currentChapterId) {
+        return { ...c, posts: [...c.posts, newPost] };
+      }
+      return c;
+    }));
+
+    setIsPostModalOpen(false);
+    setNewPostTitle('');
+    setNewPostContent('');
+    setNewPostDate('');
+    setNewPostMedia(null);
+    setNewPostMediaUrlInput('');
+  };
+
+  // --- Export Data Logic ---
+  const handleExportData = () => {
+      setIsExportModalOpen(true);
+  };
+  
+  const copyToClipboard = () => {
+      const dataString = JSON.stringify(chapters, null, 2);
+      navigator.clipboard.writeText(`export const INITIAL_CHAPTERS = ${dataString};`);
+      alert("代码已复制！\n请打开 VS Code 里的 constants.ts 文件，\n粘贴并替换原有内容，然后提交到 GitHub。");
+  };
+
+
+  // --- Chapter Management ---
+  const openCreateChapterModal = () => {
+    setChapterFormMode('create');
+    setChapterFormTitle('');
+    setChapterFormBGM(null);
+    setChapterFormBgmUrlInput('');
+    setEditingChapterId(null);
+    setPreviewBgmUrl('');
+    setIsChapterModalOpen(true);
+  };
+
+  const openEditChapterModal = (chapter: Chapter) => {
+    setChapterFormMode('edit');
+    setChapterFormTitle(chapter.title);
+    setChapterFormBGM(null);
+    
+    let displayUrl = chapter.bgmUrl || '';
+    try {
+        displayUrl = decodeURIComponent(displayUrl);
+        // Strip path for display
+        displayUrl = displayUrl.replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+    } catch (e) {}
+    
+    setChapterFormBgmUrlInput(displayUrl);
+    setEditingChapterId(chapter.id);
+    setIsChapterModalOpen(true);
+  };
+
+  const handleSubmitChapter = () => {
+    if (!chapterFormTitle.trim()) return;
+    
+    let finalBgmUrl = undefined;
+    
+    // 1. Prioritize Manual Input (Deployment Safe)
+    if (chapterFormBgmUrlInput.trim()) {
+        const rawInput = chapterFormBgmUrlInput.trim();
+
+        if (rawInput.startsWith('http')) {
+            finalBgmUrl = rawInput;
+        } else {
+            // SMART HANDLING FOR LOCAL FILES
+            let filename = rawInput.replace(/^(\/)?(public\/)?(bgm\/)?/i, '');
+            try { filename = decodeURIComponent(filename); } catch(e){}
+            const encodedFilename = encodeURIComponent(filename);
+            
+            // IMPORTANT: Use relative path 'bgm/...' NOT '/bgm/...' 
+            // This ensures it works on GitHub Pages with subdirectories.
+            finalBgmUrl = `bgm/${encodedFilename}`;
+        }
+    } 
+    // 2. Fallback to Blob
+    else if (chapterFormBGM) {
+        finalBgmUrl = URL.createObjectURL(chapterFormBGM);
+    }
+
+    if (chapterFormMode === 'create') {
+      const newChapter: Chapter = {
+        id: `c-${Date.now()}-${Math.random()}`,
+        title: chapterFormTitle,
+        heroTitle: 'Merry Christmas',
+        heroSubtitle: '收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️',
+        weather: 'snow',
+        decorations: JSON.parse(JSON.stringify(INITIAL_DECORATIONS)),
+        posts: [],
+        bgmUrl: finalBgmUrl
+      };
+      setChapters(prev => [...prev, newChapter]);
+      setCurrentChapterId(newChapter.id);
+    } else if (chapterFormMode === 'edit' && editingChapterId) {
+      setChapters(prev => prev.map(c => {
+        if (c.id === editingChapterId) {
+          return {
+            ...c,
+            title: chapterFormTitle,
+            bgmUrl: finalBgmUrl !== undefined ? finalBgmUrl : c.bgmUrl
+          };
+        }
+        return c;
+      }));
+    }
+    setIsChapterModalOpen(false);
+  };
+
+  const sortedPosts = currentChapter ? [...currentChapter.posts].sort((a, b) => {
+    // 增加安全性，防止日期格式错误导致排序乱掉
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    return sortAscending ? timeA - timeB : timeB - timeA;
+  }) : [];
+
+  if (!currentChapter) return <div className="text-white p-10">Loading...</div>;
+
   return (
-    <div className="relative h-screen w-full overflow-hidden">
-      <audio ref={audioRef} loop crossOrigin="anonymous" />
+    <div className="relative min-h-screen font-sans text-white overflow-hidden">
+      {/* Main Audio Player (Hidden, but logic is active) */}
+      <audio 
+        ref={audioRef} 
+        loop 
+        onError={(e) => {
+           console.error("Main Audio playback error", e);
+           setAutoPlayFailed(true);
+        }}
+      />
+
+      {/* 🎁 START SCREEN (GIFT COVER) - Resolves Autoplay & Volume issues */}
+      {showStartScreen && (
+        <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center animate-fade-in">
+            {/* Background effects for the cover */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
+                <WeatherLayer weather="snow" />
+            </div>
+            
+            <div className="z-10 flex flex-col items-center gap-8 p-8 text-center">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-christmas-gold blur-3xl opacity-20 rounded-full animate-pulse"></div>
+                    <h1 className="text-5xl md:text-7xl font-cute text-transparent bg-clip-text bg-gradient-to-br from-christmas-gold to-yellow-200 drop-shadow-lg relative z-10">
+                        Merry Christmas
+                    </h1>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
+                   <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
+                      致最可爱的你：<br/>
+                      这里藏着一份特别的礼物，<br/>
+                      记录了我们的点点滴滴。
+                   </p>
+                   
+                   <button 
+                     onClick={handleStartApp}
+                     className="group relative w-full bg-christmas-red hover:bg-red-600 text-white font-bold py-4 px-8 rounded-xl shadow-[0_4px_15px_rgba(212,36,38,0.5)] transition-all transform hover:scale-105 active:scale-95 overflow-hidden"
+                   >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                      <div className="flex items-center justify-center gap-3 text-xl">
+                         <Gift className="animate-bounce" />
+                         <span>开启礼物</span>
+                      </div>
+                   </button>
+                   
+                   <p className="text-xs text-gray-400 mt-4">
+                      * 推荐开启声音，获得最佳体验 🎵
+                   </p>
+                </div>
+            </div>
+        </div>
+      )}
+
       <WeatherLayer weather={currentChapter.weather} />
-      {currentChapter.decorations.map(d => (
-        <DraggableDecoration key={d.id} decoration={d} mode={isAdmin ? 'editor' : 'viewer'} onUpdate={handleUpdateDecoration} />
+
+      {currentChapter.decorations.map(deco => (
+        <DraggableDecoration 
+          key={`${currentChapter.id}-${deco.id}`} 
+          decoration={deco} 
+          mode={mode} 
+          onUpdate={handleDecorationUpdate} 
+        />
       ))}
 
-      <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto overflow-x-hidden z-10 perspective-1000">
-        <div className="min-h-screen w-full flex flex-col items-center pb-32">
-          {/* Hero Section */}
-          <div className="relative w-full h-[50vh] flex flex-col items-center justify-center text-center px-4 mt-10 mb-10">
-             {isEditingHero && isAdmin ? (
-                <div className="bg-black/40 p-6 rounded-xl backdrop-blur-md flex flex-col gap-4 animate-scale-in w-full max-w-lg">
-                    <input value={heroEditTitle} onChange={(e) => setHeroEditTitle(e.target.value)} className="bg-transparent border-b border-white/50 text-5xl font-handwriting text-christmas-red text-center focus:outline-none" placeholder="大标题" />
-                    <textarea value={heroEditSubtitle} onChange={(e) => setHeroEditSubtitle(e.target.value)} className="bg-transparent border-b border-white/50 text-xl text-white text-center focus:outline-none resize-none h-24 font-cute" placeholder="副标题" />
-                    <div className="flex justify-center gap-4 mt-2">
-                        <button onClick={handleSaveHeroEdit} className="bg-green-600 px-4 py-1 rounded hover:bg-green-700 text-sm">保存</button>
-                        <button onClick={() => setIsEditingHero(false)} className="bg-gray-600 px-4 py-1 rounded hover:bg-gray-700 text-sm">取消</button>
-                    </div>
-                </div>
-             ) : (
-                <div className="group relative">
-                    <h1 className="font-handwriting text-6xl md:text-8xl text-christmas-red mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-float">{displayHeroTitle}</h1>
-                    <p className="text-xl md:text-2xl text-white font-cute whitespace-pre-wrap drop-shadow-md leading-relaxed">{displayHeroSubtitle}</p>
-                    {isAdmin && (<button onClick={() => setIsEditingHero(true)} className="absolute -top-4 -right-8 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-white/50 hover:text-white"><Pencil size={20} /></button>)}
-                </div>
-             )}
-          </div>
-
-          {/* Chapter Nav */}
-          <div className="sticky top-4 z-40 flex items-center gap-2 bg-black/30 backdrop-blur-xl p-2 rounded-full border border-white/10 shadow-2xl mb-12 transition-all hover:bg-black/50">
-             <button onClick={() => prevChapter && setCurrentChapterId(prevChapter.id)} disabled={!prevChapter} className={`p-2 rounded-full transition-all ${prevChapter ? 'hover:bg-white/20 text-white' : 'text-white/20 cursor-not-allowed'}`}><ArrowLeft size={20} /></button>
-             <div className="flex items-center gap-2 px-4 border-x border-white/10">
-                 <button onClick={() => isAdmin && openEditChapterModal(currentChapter)} className={`text-sm font-bold text-christmas-gold font-cute tracking-widest ${isAdmin ? 'hover:underline cursor-pointer' : 'cursor-default'}`}>{currentChapter.title}</button>
-                 {isAdmin && (<button onClick={openCreateChapterModal} className="p-1 hover:bg-white/20 rounded-full text-green-400"><Plus size={14} /></button>)}
+      {/* Giant Heart Easter Egg Overlay */}
+      {giantHeartVisible && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none animate-scale-in">
+             <div className="text-[15rem] drop-shadow-[0_0_50px_rgba(255,0,0,0.8)] animate-pulse">
+                 ❤️
              </div>
-             <button onClick={() => nextChapter && setCurrentChapterId(nextChapter.id)} disabled={!nextChapter} className={`p-2 rounded-full transition-all ${nextChapter ? 'hover:bg-white/20 text-white' : 'text-white/20 cursor-not-allowed'}`}><ArrowRight size={20} /></button>
-             {isAdmin && (<button onClick={() => setDeleteConfirm({ type: 'chapter', id: currentChapterId })} className="ml-2 p-2 hover:bg-red-500/30 rounded-full text-red-400 transition-colors"><Trash2 size={16} /></button>)}
           </div>
+      )}
 
-          {/* Posts */}
-          <div className="w-full max-w-3xl px-4 space-y-8">
-            <div className="flex justify-between items-center px-2 mb-4">
-               <button onClick={() => setSortAscending(!sortAscending)} className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"><ArrowDownUp size={16} /> {sortAscending ? "时间倒序" : "时间正序"}</button>
-               {isAdmin && (<button onClick={() => setIsPostModalOpen(true)} className="flex items-center gap-2 bg-christmas-red hover:bg-red-700 text-white px-4 py-2 rounded-full shadow-lg transition-transform hover:scale-105 font-cute"><Edit2 size={16} /> 写新回忆</button>)}
+      {/* 🚀 关键修改：把 ref 加在这个真正负责滚动的 div 上 */}
+      <div 
+        ref={scrollContainerRef}
+        className="relative z-20 h-screen overflow-y-auto overflow-x-hidden flex flex-col"
+      >
+        
+        {/* Header */}
+        <header className="sticky top-0 z-50 p-4 bg-gradient-to-b from-black/90 via-black/70 to-transparent pointer-events-auto">
+          <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <div className="flex items-center gap-4 w-full md:w-auto justify-between">
+              <div className="flex items-center gap-2 select-none">
+                 <div 
+                    className="bg-christmas-gold p-2 rounded-full shadow-lg animate-pulse cursor-pointer active:scale-90 transition-transform"
+                    onClick={handleUnlockAdmin}
+                    title={isAdmin ? "管理员模式已开启" : "点击 5 次解锁编辑模式"}
+                 >
+                  <Heart className="text-red-600 fill-current" size={24} />
+                </div>
+                <h1 className="text-2xl md:text-3xl font-cute text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">一本喵书📖</h1>
+              </div>
+
+              {currentChapter.bgmUrl && (
+                <button 
+                  onClick={() => {
+                      if (autoPlayFailed || isMuted) {
+                           // UNMUTE: Resume playback
+                           // This logic is now handled by the useEffect dependent on `isMuted`
+                           // We just flip the switch here.
+                           setIsMuted(false);
+                           setAutoPlayFailed(false);
+                      } else {
+                          // MUTE: Pause playback
+                          setIsMuted(true);
+                      }
+                  }}
+                  className={`p-2 rounded-full transition-all flex items-center justify-center backdrop-blur-md border ${
+                      !isMuted && !autoPlayFailed 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 hover:scale-105' 
+                        : 'bg-black/40 text-gray-400 border-white/10 hover:text-white hover:bg-black/60'
+                  }`}
+                  title={autoPlayFailed || isMuted ? "播放音乐" : "静音"}
+                >
+                  {isMuted || autoPlayFailed ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+              )}
             </div>
-            {sortedPosts.length === 0 ? (
-               <div className="text-center py-20 text-white/50 bg-white/5 rounded-2xl border border-dashed border-white/10"><Gift size={48} className="mx-auto mb-4 opacity-50" /><p className="font-cute text-lg">这一章还没有回忆哦，快来添加吧！</p></div>
-            ) : (
-               sortedPosts.map(post => (
-                <PostCard key={post.id} post={post} mode={isAdmin ? 'editor' : 'viewer'} onLikePost={handleLikePost} onDeletePost={() => setDeleteConfirm({ type: 'post', id: post.id })} onUpdatePost={handleUpdatePost} onTriggerEasterEgg={handleTriggerEasterEgg} />
-              ))
+
+            {/* Chapter Tabs */}
+            <div className="flex-1 overflow-x-auto w-full md:w-auto no-scrollbar mx-4">
+               <div className="flex items-center gap-2">
+                  {chapters.map(chapter => (
+                    <div key={chapter.id} className="relative shrink-0 flex items-center group">
+                      <button
+                        onClick={() => switchChapter(chapter.id)} // 🚀 这里修改为使用 switchChapter
+                        className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all border mr-1 ${
+                          currentChapterId === chapter.id 
+                            ? 'bg-christmas-red border-christmas-gold text-white shadow-[0_0_15px_rgba(212,36,38,0.6)] transform -translate-y-1 z-10' 
+                            : 'bg-black/40 border-white/20 text-gray-300 hover:bg-white/10'
+                        }`}
+                      >
+                        {chapter.title}
+                      </button>
+
+                      {isAdmin && mode === 'editor' && currentChapterId === chapter.id && (
+                        <div className="flex gap-1 ml-1 bg-black/60 backdrop-blur-md rounded-md p-1 border border-white/20 shadow-xl z-50 relative">
+                           <button 
+                              onClick={(e) => { 
+                                e.preventDefault(); 
+                                e.stopPropagation(); 
+                                openEditChapterModal(chapter); 
+                              }}
+                              className="p-1.5 hover:bg-blue-500/30 rounded text-blue-300 transition-colors cursor-pointer"
+                           >
+                             <Pencil size={14} />
+                           </button>
+                           <button 
+                              onClick={(e) => { 
+                                e.preventDefault(); 
+                                e.stopPropagation(); 
+                                handleDeleteChapterRequest(chapter.id); 
+                              }}
+                              className="p-1.5 hover:bg-red-500/30 rounded text-red-400 transition-colors cursor-pointer"
+                           >
+                             <Trash2 size={14} />
+                           </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {isAdmin && mode === 'editor' && (
+                    <button 
+                      onClick={openCreateChapterModal}
+                      className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-dashed border-white/40 text-white/70 flex items-center gap-1 text-sm shrink-0 transition-colors"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  )}
+               </div>
+            </div>
+
+            {/* Mode Switcher & Settings - ONLY VISIBLE IF ADMIN */}
+            {isAdmin && (
+              <div className="flex gap-2 items-center shrink-0 animate-fade-in">
+                {mode === 'editor' && (
+                    <>
+                        <button 
+                          onClick={handleRecoverDraft}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3"
+                          title="恢复上次未保存的进度 (Local Storage)"
+                        >
+                          <RotateCcw size={16} />
+                        </button>
+
+                        <button 
+                          onClick={handleExportData}
+                          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all flex items-center gap-1 px-3 mr-2"
+                          title="导出数据以便部署"
+                        >
+                          <Download size={16} />
+                          <span className="text-xs font-bold hidden md:inline">保存代码</span>
+                        </button>
+                    </>
+                )}
+
+                <div className="bg-black/60 backdrop-blur-md rounded-full p-1 flex border border-white/10">
+                  <button 
+                    onClick={() => setMode('viewer')}
+                    className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'viewer' ? 'bg-blue-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    浏览
+                  </button>
+                  <button 
+                    onClick={() => setMode('editor')}
+                    className={`px-3 py-1.5 rounded-full text-xs md:text-sm font-bold transition-all ${mode === 'editor' ? 'bg-christmas-gold text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    编辑
+                  </button>
+                </div>
+                {mode === 'editor' && (
+                  <button 
+                    onClick={() => setIsDIYPanelOpen(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-transform hover:scale-110"
+                    title="本章环境设置"
+                  >
+                    <Settings size={20} />
+                  </button>
+                )}
+
+                {/* Lock / Preview Button */}
+                <button 
+                    onClick={() => {
+                        setIsAdmin(false);
+                        setMode('viewer');
+                        alert("已进入纯净预览模式。\n（提示：如需重新编辑，请连续点击左上角红色爱心 5 次）");
+                    }}
+                    className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full shadow-colors transition-colors ml-2"
+                    title="退出编辑/预览最终效果"
+                >
+                    <EyeOff size={20} />
+                </button>
+              </div>
             )}
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* FABs */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-        <div className="relative group">
-            <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-full shadow-lg backdrop-blur-md transition-all ${isMuted ? 'bg-gray-500/50 text-gray-300' : 'bg-white/20 text-white animate-pulse'}`}>{isMuted ? <VolumeX size={24} /> : <Music size={24} />}</button>
-            {autoPlayFailed && !isMuted && (<div className="absolute right-full mr-2 top-0 bg-black/80 text-white text-xs p-2 rounded whitespace-nowrap">点击播放音乐 👉</div>)}
-        </div>
-        {isAdmin && (<button onClick={handleRecoverDraft} className="p-3 rounded-full bg-yellow-500/80 text-white shadow-lg hover:bg-yellow-600 backdrop-blur-md"><RotateCcw size={24} /></button>)}
-        {isAdmin && (<button onClick={() => setIsDIYPanelOpen(true)} className="p-3 rounded-full bg-christmas-green text-white shadow-lg hover:bg-green-800 transition-transform hover:rotate-90"><Settings size={24} /></button>)}
-        <button onClick={toggleAdmin} className={`p-3 rounded-full shadow-lg backdrop-blur-md transition-all ${isAdmin ? 'bg-christmas-red text-white' : 'bg-pink-500/30 text-pink-200 hover:bg-pink-500/50'}`}><Heart size={24} className={isAdmin ? "fill-current" : ""} /></button>
-        {isAdmin && (<button onClick={() => setIsExportModalOpen(true)} className="p-3 rounded-full bg-blue-600/80 text-white shadow-lg hover:bg-blue-700 backdrop-blur-md"><Download size={24} /></button>)}
-      </div>
-
-      <DIYPanel isOpen={isDIYPanelOpen} onClose={() => setIsDIYPanelOpen(false)} currentWeather={currentChapter.weather} onWeatherChange={handleWeatherChange} decorations={currentChapter.decorations} onAddDecoration={handleAddDecoration} onRemoveDecoration={handleRemoveDecoration} chapterTitle={currentChapter.title} />
-
-      {/* Create/Edit Post Modal - Updated for Multiple Images */}
-      {isPostModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in">
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-cute text-xl text-gray-800">写下新的回忆 📝</h3>
-              <button onClick={() => setIsPostModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1">标题</label>
-                <input value={newPostTitle} onChange={(e) => setNewPostTitle(e.target.value)} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-christmas-green outline-none text-gray-800" placeholder="例如：第一次去迪士尼..." />
+        {/* Hero Section */}
+        <div className="text-center mt-12 mb-16 px-4 relative shrink-0">
+           <div className="relative inline-block mb-4 group">
+              <h2 className="text-5xl md:text-7xl font-cute text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-christmas-gold to-yellow-200 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse select-none">
+                {displayHeroTitle}
+              </h2>
+              {isAdmin && mode === 'editor' && (
+                <button 
+                  onClick={() => setIsEditingHero(true)}
+                  className="absolute -top-2 -right-6 bg-white/10 hover:bg-white/30 text-white p-1.5 rounded-full backdrop-blur-sm transition-all border border-white/20 opacity-50 group-hover:opacity-100"
+                >
+                  <Edit2 size={14} />
+                </button>
+              )}
+           </div>
+           
+           <div className="flex flex-col items-center gap-4">
+              <div className="bg-black/30 backdrop-blur-sm inline-block p-4 md:p-6 rounded-2xl border border-white/10 max-w-2xl mx-auto select-none relative">
+                <p className="text-xl md:text-2xl font-cute text-gray-100 leading-relaxed whitespace-pre-line pointer-events-none">
+                  {displayHeroSubtitle}
+                </p>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1">日期</label>
-                <input type="date" value={newPostDate} onChange={(e) => setNewPostDate(e.target.value)} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-christmas-green outline-none text-gray-800" />
+           </div>
+        </div>
+
+        {/* Sort Toolbar */}
+        {currentChapter.posts.length > 1 && (
+          <div className="container mx-auto px-4 mb-6 flex justify-end">
+             <button 
+              onClick={() => setSortAscending(!sortAscending)}
+              className="flex items-center gap-2 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-full text-sm text-gray-300 transition-colors border border-white/10"
+             >
+               <ArrowDownUp size={16} />
+               {sortAscending ? '时间正序' : '时间倒序'}
+             </button>
+          </div>
+        )}
+
+        {/* Feed */}
+        <main className="container mx-auto px-4 pb-20">
+          {sortedPosts.length > 0 ? (
+             sortedPosts.map(post => (
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                mode={mode} 
+                onDeletePost={handleDeletePostRequest}
+                onLikePost={handleLikePost}
+                onUpdatePost={handleUpdatePost}
+                onTriggerEasterEgg={triggerGiantHeart}
+              />
+            ))
+          ) : (
+            <div className="text-center text-gray-300 py-20 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl max-w-2xl mx-auto flex flex-col items-center">
+              <BookOpen size={64} className="text-white/20 mb-4" />
+              <h3 className="text-2xl font-cute mb-2">本篇章还是空的</h3>
+              <p className="mb-6 text-gray-400">开始书写属于这一章的故事吧。</p>
+              {isAdmin && mode === 'editor' && (
+                <button 
+                  onClick={() => setIsPostModalOpen(true)}
+                  className="bg-christmas-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition-colors shadow-lg"
+                >
+                  添加回忆
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* CHAPTER NAVIGATION BOTTOM BUTTONS */}
+          <div className="max-w-3xl mx-auto mt-16 pb-20 flex justify-between gap-4">
+              {prevChapter ? (
+                  <button 
+                      onClick={() => switchChapter(prevChapter.id)} // 🚀 这里修改为使用 switchChapter
+                      className="flex items-center gap-2 px-6 py-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur text-white transition-all transform hover:-translate-x-1 group w-full md:w-auto"
+                  >
+                      <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                      <div className="text-left">
+                          <span className="text-xs text-gray-400 block">上一章</span>
+                          <span className="font-bold text-lg">{prevChapter.title}</span>
+                      </div>
+                  </button>
+              ) : <div className="flex-1"></div>}
+
+              {nextChapter ? (
+                  <button 
+                      onClick={() => switchChapter(nextChapter.id)} // 🚀 这里修改为使用 switchChapter
+                      className="flex items-center justify-end gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-christmas-red to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg transition-all transform hover:translate-x-1 group w-full md:w-auto"
+                  >
+                      <div className="text-right">
+                          <span className="text-xs text-red-200 block">下一章</span>
+                          <span className="font-bold text-lg">{nextChapter.title}</span>
+                      </div>
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+              ) : <div className="flex-1"></div>}
+          </div>
+          
+          {isAdmin && mode === 'editor' && (
+            <div className="fixed bottom-10 right-6 z-40 flex flex-col gap-4 items-end">
+               <button 
+                onClick={() => setIsPostModalOpen(true)}
+                className="bg-christmas-red text-white p-4 md:px-6 md:py-4 rounded-full shadow-[0_0_20px_rgba(212,36,38,0.6)] hover:bg-red-700 transition-transform hover:scale-110 active:scale-95 flex items-center gap-2 font-bold text-lg group"
+               >
+                 <Plus size={28} className="group-hover:rotate-90 transition-transform" />
+                 <span className="hidden md:inline">写故事</span>
+               </button>
+            </div>
+          )}
+        </main>
+      </div>
+
+      <DIYPanel 
+        isOpen={isDIYPanelOpen} 
+        onClose={() => setIsDIYPanelOpen(false)}
+        currentWeather={currentChapter.weather}
+        onWeatherChange={handleWeatherChange}
+        decorations={currentChapter.decorations}
+        onAddDecoration={handleAddDecoration}
+        onRemoveDecoration={handleRemoveDecoration}
+        chapterTitle={currentChapter.title}
+      />
+
+      {/* Post Modal */}
+      {isPostModalOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl animate-scale-in text-gray-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+              <h3 className="text-2xl font-cute text-christmas-green">添加回忆 · {currentChapter.title}</h3>
+              <button onClick={() => setIsPostModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreatePost} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1">标题</label>
+                  <input 
+                    required
+                    type="text" 
+                    value={newPostTitle}
+                    onChange={e => setNewPostTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-green outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1">日期</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={newPostDate}
+                    onChange={e => setNewPostDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-green outline-none"
+                  />
+                </div>
               </div>
               
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                 <div className="flex gap-4 mb-3 border-b border-gray-200 pb-2">
-                     <button onClick={() => setNewPostType('image')} className={`flex items-center gap-1 text-sm font-bold pb-1 ${newPostType === 'image' ? 'text-christmas-green border-b-2 border-christmas-green' : 'text-gray-400'}`}><ImageIcon size={16} /> 照片 (可多选)</button>
-                     <button onClick={() => setNewPostType('video')} className={`flex items-center gap-1 text-sm font-bold pb-1 ${newPostType === 'video' ? 'text-christmas-green border-b-2 border-christmas-green' : 'text-gray-400'}`}><Video size={16} /> 视频</button>
-                 </div>
-
-                 <div className="space-y-3">
-                    <div>
-                        <label className="flex items-center gap-2 text-xs font-bold text-gray-500 mb-1"><Upload size={12} /> 临时上传</label>
-                        <input type="file" accept={newPostType === 'image' ? "image/*" : "video/*"} multiple={newPostType === 'image'} onChange={(e) => setNewPostFiles(e.target.files)} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-christmas-green/10 file:text-christmas-green hover:file:bg-christmas-green/20" />
-                        {newPostFiles && <p className="text-xs text-christmas-green mt-1">已选 {newPostFiles.length} 个文件</p>}
-                    </div>
-                    <div className="relative flex py-1 items-center">
-                        <div className="flex-grow border-t border-gray-300"></div>
-                        <span className="flex-shrink-0 mx-2 text-gray-400 text-xs">或者</span>
-                        <div className="flex-grow border-t border-gray-300"></div>
-                    </div>
-                    <div>
-                        <label className="flex items-center gap-2 text-xs font-bold text-gray-500 mb-1"><BookOpen size={12} /> 永久保存 (输入文件名)</label>
-                        <input value={newPostManualInput} onChange={(e) => setNewPostManualInput(e.target.value)} className="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-christmas-green outline-none text-gray-800" placeholder={newPostType === 'image' ? "例如: 1.jpg, 2.jpg (用逗号隔开)" : "例如: video.mp4"} />
-                        <p className="text-[10px] text-gray-400 mt-1">提示: 把文件放在 public/images 文件夹下。</p>
-                    </div>
-                 </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1">内容</label>
-                <textarea value={newPostContent} onChange={(e) => setNewPostContent(e.target.value)} rows={4} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-christmas-green outline-none text-gray-800 resize-none" placeholder="写下那一刻的故事..." />
+                <label className="block text-sm font-bold text-gray-600 mb-1">故事内容</label>
+                <textarea 
+                  required
+                  rows={4}
+                  value={newPostContent}
+                  onChange={e => setNewPostContent(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-green outline-none resize-none"
+                />
               </div>
-            </div>
-            <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
-              <button onClick={() => setIsPostModalOpen(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">取消</button>
-              <button onClick={handleCreatePost} className="px-6 py-2 bg-christmas-red text-white font-bold rounded-lg shadow-lg hover:bg-red-700 transition-transform active:scale-95">发布回忆</button>
-            </div>
+
+              {/* Enhanced Image Input Section for Deployment */}
+              <div>
+                 <label className="block text-sm font-bold text-gray-600 mb-2">图片/视频来源 (二选一)</label>
+                 
+                 <div className="space-y-4">
+                     {/* Permanent Path Option (Highlighted) */}
+                     <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2 text-green-800 font-bold text-sm">
+                            <Upload size={16} />
+                            <span>方案一：永久保存 (懒人模式) ❤️</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                           <span className="font-bold text-green-700">使用方法：</span><br/>
+                           1. 把图片传到 GitHub 的 public/images/ 文件夹。<br/>
+                           2. 下面只需填 <span className="font-bold">图片名</span> (如: <code className="bg-white px-1 rounded border border-gray-200">photo.jpg</code>)。<br/>
+                           3. 我会自动帮你处理路径！
+                        </p>
+                        <input 
+                            type="text"
+                            value={newPostMediaUrlInput}
+                            onChange={(e) => {
+                                setNewPostMediaUrlInput(e.target.value);
+                                setNewPostMedia(null); // Clear file if manual URL is used
+                            }}
+                            placeholder="photo.jpg"
+                            className="w-full border border-green-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                        />
+                     </div>
+
+                     <div className="relative flex py-1 items-center">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">或者 (本地测试用)</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                     </div>
+
+                     {/* Temporary Upload Option */}
+                     <div className={`border-2 border-dashed rounded-xl p-3 transition-colors relative group flex items-center gap-3 ${newPostMedia ? 'border-christmas-gold bg-yellow-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                        <div className="bg-gray-200 p-2 rounded-full shrink-0">
+                            <Upload size={20} className="text-gray-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                             <span className="text-sm font-medium text-gray-700 block truncate">
+                                {newPostMedia ? newPostMedia.name : "方案二：从电脑上传 (临时预览)"}
+                             </span>
+                             <p className="text-xs text-red-400 mt-0.5">⚠️ 注意：刷新页面后图片会消失！</p>
+                             <input 
+                                type="file" 
+                                accept="image/*,video/*"
+                                onChange={(e) => handleFileChange(e, 'media')}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                        </div>
+                        {newPostMedia && (
+                            <button 
+                                type="button"
+                                onClick={() => setNewPostMedia(null)}
+                                className="p-1 text-gray-400 hover:text-red-500 z-10"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                     </div>
+                 </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="w-full bg-christmas-green text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-colors shadow-lg"
+              >
+                保存回忆
+              </button>
+            </form>
           </div>
         </div>
       )}
 
       {/* Chapter Modal */}
       {isChapterModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-              <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-in">
-                  <div className="p-4 border-b bg-gray-50 flex justify-between items-center"><h3 className="font-cute text-xl text-gray-800">{chapterFormMode === 'create' ? '新建章节 📑' : '编辑章节 ⚙️'}</h3><button onClick={() => setIsChapterModalOpen(false)}><X className="text-gray-400" /></button></div>
-                  <div className="p-6 space-y-4">
-                      <div><label className="text-sm font-bold text-gray-600">章节名称</label><input value={chapterFormTitle} onChange={(e) => setChapterFormTitle(e.target.value)} className="w-full p-2 mt-1 border rounded focus:ring-christmas-green outline-none text-gray-800" placeholder="例如：第二章·热恋" /></div>
-                      <div className="border-t pt-4">
-                          <label className="text-sm font-bold text-gray-600 flex items-center gap-2"><Music size={16} /> 背景音乐 (BGM)</label>
-                          <div className="mt-2 bg-gray-50 p-3 rounded border border-dashed border-gray-300"><p className="text-xs text-gray-500 mb-2">上传文件 (临时预览)</p><input type="file" accept="audio/*" onChange={(e) => { const file = e.target.files?.[0]; if(file) { setChapterFormBGM(file); setPreviewBgmUrl(URL.createObjectURL(file)); } }} className="text-xs w-full" /></div>
-                          <div className="mt-2"><input value={chapterFormBgmUrlInput} onChange={(e) => setChapterFormBgmUrlInput(e.target.value)} className="w-full p-2 text-sm border rounded text-gray-800" placeholder="或输入文件名 (需在 public/bgm)" /></div>
-                          {previewBgmUrl && (<audio controls src={previewBgmUrl} className="w-full mt-3 h-8" />)}
-                      </div>
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in text-gray-800">
+             <h3 className="text-2xl font-cute text-christmas-red mb-6">
+                {chapterFormMode === 'create' ? '开启新篇章' : '编辑篇章'}
+             </h3>
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-bold text-gray-600 mb-1">篇章名称</label>
+                 <input 
+                    type="text" 
+                    value={chapterFormTitle}
+                    onChange={e => setChapterFormTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-red outline-none"
+                    autoFocus
+                  />
+               </div>
+
+               {/* BGM Section with Smart Input */}
+               <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1">
+                    背景音乐 (BGM)
+                  </label>
+                  
+                  {/* Manual Input (Permanent) */}
+                  <div className="bg-green-50 border border-green-200 p-3 rounded-xl mb-3">
+                      <p className="text-xs text-green-800 font-bold mb-1">✨ 懒人模式：只需填文件名</p>
+                      <p className="text-xs text-gray-600 mb-2">
+                          先把音乐/视频文件放到 <code className="bg-white px-1 border rounded">public/bgm</code> 文件夹，然后在下面填名字即可。
+                      </p>
+                      <input 
+                        type="text" 
+                        value={chapterFormBgmUrlInput}
+                        onChange={(e) => {
+                            setChapterFormBgmUrlInput(e.target.value);
+                            setChapterFormBGM(null); // Reset file if text is typed
+                        }}
+                        placeholder="例如: love.mp3 或 my-video.mp4"
+                        className="w-full border border-green-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 bg-white"
+                      />
+                      {previewBgmUrl && (
+                          <div className="mt-3 p-2 bg-white/50 rounded border border-green-100">
+                             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                <PlayCircle size={14} className="text-green-600"/>
+                                <span className="font-bold">预览播放 (测试路径是否正确):</span>
+                             </div>
+                             <audio 
+                                controls 
+                                src={previewBgmUrl} 
+                                className="w-full h-8"
+                                onError={(e) => {
+                                    const target = e.target as HTMLAudioElement;
+                                    target.style.borderColor = 'red';
+                                    alert("测试播放失败！\n1. 检查文件名是否完全一致（包括大小写 mp3 vs MP3）\n2. 检查 GitHub 上的文件是否在 public/bgm 文件夹里");
+                                }}
+                             />
+                             <p className="text-[10px] text-gray-400 mt-1 text-center">
+                                浏览器正在尝试加载: {previewBgmUrl}
+                             </p>
+                          </div>
+                      )}
                   </div>
-                  <div className="p-4 border-t bg-gray-50 flex justify-end gap-2"><button onClick={() => setIsChapterModalOpen(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-200 rounded">取消</button><button onClick={handleSaveChapter} className="px-4 py-2 bg-christmas-green text-white rounded shadow hover:bg-green-700">保存</button></div>
-              </div>
-          </div>
-      )}
-      
-      {/* Export Modal */}
-      {isExportModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-             <div className="bg-white rounded-xl w-full max-w-2xl p-6 shadow-2xl relative">
-                 <button onClick={() => setIsExportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-black"><X /></button>
-                 <h2 className="text-2xl font-cute text-gray-800 mb-4 flex items-center gap-2"><Copy className="text-blue-500" /> 保存你的作品</h2>
-                 <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 leading-relaxed"><p className="font-bold mb-2">⚠️ 提示</p><p>点击复制，替换 constants.ts 中的内容即可永久保存。</p></div>
-                 <textarea className="w-full h-64 bg-gray-900 text-green-400 font-mono text-xs p-4 rounded-lg focus:outline-none resize-none" readOnly value={JSON.stringify(chapters, null, 2)} />
-                 <div className="mt-4 flex justify-end"><button onClick={handleExportData} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2"><Copy size={18} /> 一键复制 JSON 代码</button></div>
+
+                  <div className="relative flex py-1 items-center">
+                    <span className="flex-shrink-0 text-gray-300 text-[10px] mx-auto">或临时上传</span>
+                  </div>
+
+                  {/* File Upload (Temp) */}
+                  <div className="flex items-center gap-2 border border-dashed border-gray-300 rounded-lg p-2 bg-gray-50 relative hover:border-gray-400">
+                     <input 
+                        type="file" 
+                        accept="audio/*"
+                        onChange={(e) => handleFileChange(e, 'bgm')}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                     />
+                     <Music className="text-gray-400" size={20} />
+                     <span className="text-sm text-gray-500 flex-1 truncate">
+                       {chapterFormBGM ? chapterFormBGM.name : "点击上传文件 (刷新会消失)"}
+                     </span>
+                  </div>
+               </div>
+
+               <div className="flex gap-3 mt-6">
+                  <button 
+                    onClick={() => setIsChapterModalOpen(false)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg font-bold hover:bg-gray-200"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={handleSubmitChapter}
+                    className="flex-1 bg-christmas-red text-white py-2 rounded-lg font-bold hover:bg-red-800"
+                    disabled={!chapterFormTitle.trim()}
+                  >
+                    {chapterFormMode === 'create' ? '创建' : '保存修改'}
+                  </button>
+               </div>
              </div>
           </div>
-      )}
-      
-      {/* Delete Modal */}
-      {deleteConfirm && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-              <div className="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center animate-scale-in">
-                  <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4"><AlertTriangle className="text-red-500" /></div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">确定要删除吗？</h3>
-                  <div className="flex gap-3 justify-center"><button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">再想想</button><button onClick={() => { if (deleteConfirm.type === 'chapter') handleDeleteChapter(deleteConfirm.id); else handleDeletePost(deleteConfirm.id); }} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-lg">确认删除</button></div>
-              </div>
-          </div>
+        </div>
       )}
 
-      {/* Easter Egg */}
-      {giantHeartVisible && (
-        <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-[1000] animate-scale-in"><Heart className="text-pink-500 drop-shadow-[0_0_50px_rgba(236,72,153,0.8)] animate-pulse" size={300} fill="currentColor" /></div>
+      {/* Export Data Modal */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 z-[90] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+           <div className="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl animate-scale-in text-gray-800">
+              <div className="flex items-center gap-3 mb-4 text-green-700">
+                 <Download size={32} />
+                 <h3 className="text-2xl font-bold">同步内容给女朋友</h3>
+              </div>
+              
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-sm text-red-800">
+                 <div className="flex items-center gap-2 mb-2">
+                     <AlertTriangle size={18} />
+                     <p className="font-bold text-lg">重要提示：</p>
+                 </div>
+                 <p className="leading-relaxed">
+                   你现在看到的内容（帖子、DIY装饰）目前只保存在 <span className="font-bold underline">你自己的浏览器缓存</span> 里。
+                   你直接分享网址给别人，<span className="font-bold text-red-600">他们是看不到这些新内容的！</span>
+                 </p>
+              </div>
+
+              <div className="mb-6">
+                 <label className="block text-sm font-bold text-gray-600 mb-2">只需3步，让大家都能看到：</label>
+                 <ol className="list-decimal list-inside space-y-3 text-sm text-gray-700 bg-gray-50 p-5 rounded-lg border border-gray-200">
+                    <li>点击下方的 <span className="bg-green-100 text-green-800 font-bold px-1 rounded">复制配置代码</span> 按钮。</li>
+                    <li>回到你的代码项目（VS Code），打开 <code className="bg-gray-200 px-1 py-0.5 rounded text-red-500 font-mono">constants.ts</code> 文件。</li>
+                    <li>
+                        找到 <code className="bg-gray-200 px-1 py-0.5 rounded font-mono">export const INITIAL_CHAPTERS = ...</code> 这部分，
+                        把它全部替换成你刚才复制的代码。
+                    </li>
+                    <li className="bg-blue-50 p-2 rounded border border-blue-200 text-blue-800 font-bold">
+                        <span className="flex items-center gap-1"><ImageIcon size={14}/> 上传资源文件！</span>
+                        <ul className="list-disc list-inside ml-4 mt-1 font-normal">
+                            <li>图片放在: <code>public/images/</code></li>
+                            <li>音乐放在: <code>public/bgm/</code></li>
+                        </ul>
+                    </li>
+                    <li>最后提交代码到 GitHub，Vercel 会自动更新网站。</li>
+                 </ol>
+              </div>
+
+              <div className="flex gap-4">
+                 <button 
+                   onClick={() => setIsExportModalOpen(false)}
+                   className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 transition-colors"
+                 >
+                   关闭
+                 </button>
+                 <button 
+                   onClick={copyToClipboard}
+                   className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-christmas-green to-green-600 hover:from-green-700 hover:to-green-800 text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 group"
+                 >
+                   <Copy size={20} />
+                   复制配置代码
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Edit Hero Text Modal */}
+      {isEditingHero && (
+        <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 text-gray-800 animate-scale-in shadow-2xl">
+             <h3 className="text-2xl font-cute text-christmas-red mb-4">修改首页文字</h3>
+             <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1">主标题</label>
+                  <input 
+                    type="text" 
+                    value={heroEditTitle}
+                    onChange={e => setHeroEditTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-red outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1">副标题</label>
+                  <textarea 
+                    rows={4}
+                    value={heroEditSubtitle}
+                    onChange={e => setHeroEditSubtitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-christmas-red outline-none"
+                  />
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <button 
+                    onClick={() => setIsEditingHero(false)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={handleSaveHeroText}
+                    className="flex-1 bg-christmas-green text-white py-2 rounded-lg font-bold hover:bg-green-800"
+                  >
+                    保存
+                  </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[80] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#1a1a1a] border border-christmas-gold/30 rounded-2xl max-w-sm w-full p-8 text-center shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-christmas-red to-transparent"></div>
+             <AlertTriangle className="mx-auto text-christmas-gold mb-4" size={48} />
+             <h3 className="text-2xl font-cute text-white mb-2">
+               {deleteConfirm.type === 'post' 
+                 ? '彻底删除回忆？' 
+                 : '删除整个篇章？'}
+             </h3>
+             <p className="text-gray-400 mb-8 text-sm leading-relaxed">
+               {deleteConfirm.type === 'post' 
+                 ? '这段回忆将永远消失在时间的长河中，无法找回。' 
+                 : '这个篇章里的所有故事和装饰都会一起消失。'}
+             </p>
+             <div className="flex gap-3">
+               <button 
+                 onClick={() => setDeleteConfirm(null)}
+                 className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition-colors"
+               >
+                 我再想想
+               </button>
+               <button 
+                 onClick={executeDelete}
+                 className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+               >
+                 <Trash2 size={18} />
+                 确认删除
+               </button>
+             </div>
+          </div>
+        </div>
       )}
     </div>
   );
