@@ -1,5 +1,4 @@
 
-
 export type WeatherType = 'snow' | 'rain' | 'sunny' | 'starry';
 
 // 使用换行可以让代码更清晰，想加新的直接在后面接着写就行
@@ -39,8 +38,8 @@ export interface MemoryPost {
   title: string;
   date: string;
   content: string;
-  mediaUrl?: string; // Kept for video or backward compatibility
-  images?: string[]; // New: For multiple images (WeChat style)
+  mediaUrl?: string; // 兼容旧的单图/视频模式
+  images?: string[]; // 新增：支持多张图片链接
   mediaType: 'image' | 'video';
   likes: number;
 }
