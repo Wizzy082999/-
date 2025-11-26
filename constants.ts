@@ -172,6 +172,15 @@ export const INITIAL_CHAPTERS = [
         ],
         "mediaType": "image",
         "likes": 0
+      },
+      {
+        "id": "p-1764144958207-pbwihc4as",
+        "title": "怒了💢💢💢",
+        "content": "    今天看电视剧的时候，你说想我，你蛮伤心的。你说我很久没有认真写日记，还说我们一路走来丢了很多东西。我说没有丢，只是在换，你只说了三个字“换回来”，随即撤回了，好吧，我还蛮伤心的，或许你更喜欢以前的我。\n    我已写上，我已心碎💔",
+        "date": "2025-11-26",
+        "images": [],
+        "mediaType": "image",
+        "likes": 0
       }
     ],
     "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
