@@ -181,66 +181,26 @@ export const INITIAL_CHAPTERS = [
         "images": [],
         "mediaType": "image",
         "likes": 0
+      },
+      {
+        "id": "p-1764491634901-detbddgoy",
+        "title": "你不参加国考吗",
+        "content": "    今天是11月最后一天喽，时间过得真快。\n\t现在好多情绪交织在一起呀，又开心又烦，还有好多事要做，窗外喜鹊一直叫呢，太阳也透过窗帘缝照在我的脸上，并不觉得刺眼，想出去走走。\n\t今天已是国考，听说资格审查过的人数和国考岗位招人的人数的比例是98:1，好牛的国考人，考上真的是百里挑一了，果然公务员还是有过人之处。但是此时此刻，国考貌似还剩下4分钟就结束啦，真替他们感到开心，至少刚考完的他们应该是蛮开心的，虽然一周后还有省考。\n\t什么时候这种日子才能结束呢？这种日子结束后会是什么样的日子呢？是不是我想的太多做的太少了，我刷个厕所我都要想好多天，我想在网上买橡胶手套，买口罩，买专门的刷子，买洁厕灵，但是迟迟没有买，所以就迟迟没有刷。其实呢，压根不需要这些，只是去楼下超市买一瓶6块钱的洁厕灵便可以完成这件事，从购入到清洁完也仅需半小时。好吧，恐怕是我想的太多，但又没实际去做，你也经常鼓励我，我是畏首畏尾的，疑窦丛生的，但是又什么事情都想不明白。\n\t太菜太菜，如何呢？今天阳光真好啊，落日余晖好温柔，不晒但还是暖，再过两天我就去找你啦，希望天气还是这般好，我们是出去走走呢还是房间里待着呢？都好都好。",
+        "date": "2025-11-30",
+        "images": [],
+        "mediaType": "image",
+        "likes": 0
       }
     ],
     "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
   },
   {
     "id": "c-1763882830286-0.9762468187284853",
-    "title": "222",
-    "heroTitle": "Merry Christmas",
-    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
+    "title": "第二章！春天来啦",
+    "heroTitle": "你来到我的城市🚄",
+    "heroSubtitle": "喝一杯星巴克☕，\n赠送一次名刀机会",
     "weather": "sunny",
-    "decorations": [
-      {
-        "id": "d1",
-        "type": "santa",
-        "x": 10,
-        "y": 15,
-        "scale": 1.5,
-        "visible": true
-      },
-      {
-        "id": "d2",
-        "type": "tree",
-        "x": 85,
-        "y": 65,
-        "scale": 2,
-        "visible": true
-      },
-      {
-        "id": "d3",
-        "type": "snowman",
-        "x": 15,
-        "y": 75,
-        "scale": 1.5,
-        "visible": true
-      },
-      {
-        "id": "deco-1763882837476-nxl3k",
-        "type": "bell",
-        "x": 74.54778043494598,
-        "y": 75.28561244048919,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763882837886-3ptll",
-        "type": "gift",
-        "x": 20.260416666666668,
-        "y": 60.10582010582011,
-        "scale": 1,
-        "visible": true
-      },
-      {
-        "id": "deco-1763882838726-zmva0",
-        "type": "star",
-        "x": 19.492965336149943,
-        "y": 87.92140960777127,
-        "scale": 1,
-        "visible": true
-      }
-    ],
+    "decorations": [],
     "posts": [
       {
         "id": "p-1763882856186-en4pq6nei",
@@ -261,7 +221,7 @@ export const INITIAL_CHAPTERS = [
         "likes": 0
       }
     ],
-    "bgmUrl": "/bgm/又是艳阳天.mp3"
+    "bgmUrl": "bgm/%E5%8F%88%E6%98%AF%E8%89%B3%E9%98%B3%E5%A4%A9.mp3"
   },
   {
     "id": "c-1763889537549-0.7878904477871393",
@@ -331,7 +291,12 @@ export const DECORATION_ASSETS: Record<DecorationType, string> = {
   flash: '⚡️',
   beatheart: '💗',
   popcorn: '🍿',
-  film: '🎥'
+  film: '🎥',
+  camera: '📸',
+  train: '🚆',
+  ticket: '🎫',
+  tree: '🌳',
+  temple: '🛕'
 };
 
 export const DECORATION_NAMES: Record<DecorationType, string> = {
@@ -354,7 +319,12 @@ export const DECORATION_NAMES: Record<DecorationType, string> = {
   flash: '闪电',
   beatheart: '跳动的心',
   popcorn: '爆米花',
-  film: '电影'
+  film: '电影',
+  camera: 'CCD',
+  train: '火车',
+  ticket: '车票',
+  tree: '树',
+  temple: '寺庙'
 };
 
 // Helper array for the UI loop
