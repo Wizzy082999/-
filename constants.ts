@@ -273,7 +273,7 @@ export const INITIAL_CHAPTERS = [
 // Expanded asset list with bigger/complex emojis
 export const DECORATION_ASSETS: Record<DecorationType, string> = {
   santa: '🎅🦌🛷', // Santa with reindeer and sleigh
-  tree: '🎄',
+  bigtree: '🎄',
   sock: '🧦',
   cat: '🐱',
   dog: '🐶',
@@ -301,7 +301,7 @@ export const DECORATION_ASSETS: Record<DecorationType, string> = {
 
 export const DECORATION_NAMES: Record<DecorationType, string> = {
   santa: '飞天圣诞老人',
-  tree: '大圣诞树',
+  bigtree: '大圣诞树',
   sock: '圣诞袜',
   cat: '小猫咪',
   dog: '小狗狗',
@@ -329,8 +329,9 @@ export const DECORATION_NAMES: Record<DecorationType, string> = {
 
 // Helper array for the UI loop
 export const AVAILABLE_DECORATIONS: DecorationType[] = [
-  'santa', 'tree', 'snowman', 'sock', 'gift', 'bell', 
+  'santa', 'bigtree', 'snowman', 'sock', 'gift', 'bell', 
   'cat', 'dog', 'star', 'moon', 'rainbow', 'flower', 
   'lantern', 'firecracker', 'umbrella', 'milk', 'flash', 
-  'beatheart', 'popcorn','film'
+  'beatheart', 'popcorn','film','camera', 'train', 'ticket',
+  'tree','temple'
 ];
