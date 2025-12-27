@@ -121,7 +121,8 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const getGridClass = (count: number) => {
       if (count === 1) return "grid-cols-1"; 
-      if (count === 2 || count === 4) return "grid-cols-2 max-w-[600px]"; // 增加双图时的宽度上限，让图更大
+      if (count === 2) return "grid-cols-2"; // 移除 max-w-[600px] 限制，让双图撑满容器
+      if (count === 4) return "grid-cols-2 max-w-[600px]"; 
       return "grid-cols-3 max-w-[600px]"; 
   };
 
@@ -186,8 +187,14 @@ export const PostCard: React.FC<PostCardProps> = ({
                            key={idx} 
                            src={img} 
                            alt={`${post.title}-${idx}`} 
-                           // 关键修改：单张图不再限制 500px，多张图使用 object-contain 并增加背景
-                           className={`w-full rounded cursor-pointer hover:scale-[1.01] transition-transform duration-300 border border-white/5 shadow-sm ${displayImages.length === 1 ? 'h-auto max-h-[85vh]' : 'aspect-square bg-black/30'}`}
+                           // 关键修改：双图时使用 aspect-[3/4]，这会比之前的 square 更高更大
+                           className={`w-full rounded cursor-pointer hover:scale-[1.01] transition-transform duration-300 border border-white/5 shadow-sm ${
+                             displayImages.length === 1 
+                               ? 'h-auto max-h-[85vh]' 
+                               : displayImages.length === 2 
+                                 ? 'aspect-[3/4] bg-black/30' 
+                                 : 'aspect-square bg-black/30'
+                           }`}
                         />
                     ))}
                 </div>
