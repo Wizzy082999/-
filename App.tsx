@@ -603,44 +603,50 @@ const App: React.FC = () => {
         }}
       />
 
-      {/* 🎁 START SCREEN (GIFT COVER) - Resolves Autoplay & Volume issues */}
+      {/* 🎁 START SCREEN (GIFT COVER) - Updated to Anniversary Theme (Classy Gold/Red) */}
       {showStartScreen && (
         <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center animate-fade-in">
             {/* Background effects for the cover */}
-            <div className="absolute inset-0 opacity-30 pointer-events-none">
-                <WeatherLayer weather="snow" />
+            <div className="absolute inset-0 opacity-50 pointer-events-none">
+                <WeatherLayer weather="starry" />
             </div>
             
-            <div className="z-10 flex flex-col items-center gap-8 p-8 text-center">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-christmas-gold blur-3xl opacity-20 rounded-full animate-pulse"></div>
-                    <h1 className="text-5xl md:text-7xl font-cute text-transparent bg-clip-text bg-gradient-to-br from-christmas-gold to-yellow-200 drop-shadow-lg relative z-10">
-                        Merry Christmas
-                    </h1>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)] max-w-md w-full animate-fade-in-up">
-                   <p className="text-lg font-sans text-gray-200 mb-6 leading-relaxed">
-                      致最可爱的你：<br/>
-                      这里藏着一份特别的礼物，<br/>
-                      记录了我们的点点滴滴。
-                   </p>
+            <div className="z-10 flex flex-col items-center gap-8 p-8 text-center animate-fade-in max-w-lg mx-auto w-full">
+               
+               {/* Title Section with Glow */}
+               <div className="relative group">
+                  {/* Gold/Amber Glow */}
+                  <div className="absolute -inset-8 bg-amber-500/20 blur-3xl rounded-full opacity-60 animate-pulse"></div>
+                  {/* FIXED: Font color changed to Gold gradient and whitespace-nowrap maintained */}
+                  <h1 className="text-5xl md:text-8xl font-cute text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] relative z-10 whitespace-nowrap">
+                    爱你500遍
+                  </h1>
+               </div>
+               
+               {/* Message Box */}
+               <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/10 shadow-2xl w-full space-y-6 transform hover:scale-[1.02] transition-transform duration-500">
+                   <div className="text-xl font-sans font-light tracking-wide text-gray-100 space-y-3 leading-relaxed">
+                     <p className="font-bold text-amber-300">致最可爱的你：</p>
+                     <p>这里藏着一份特别的礼物，</p>
+                     <p>记录了我们的点点滴滴。</p>
+                   </div>
                    
                    <button 
                      onClick={handleStartApp}
-                     className="group relative w-full bg-christmas-red hover:bg-red-600 text-white font-bold py-4 px-8 rounded-xl shadow-[0_4px_15px_rgba(212,36,38,0.5)] transition-all transform hover:scale-105 active:scale-95 overflow-hidden"
+                     // Classy Deep Red button with Gold icon
+                     className="w-full py-4 bg-gradient-to-r from-red-800 to-red-600 hover:from-red-700 hover:to-red-500 text-white rounded-xl text-xl font-cute shadow-lg shadow-red-900/50 transition-all flex items-center justify-center gap-3 group overflow-hidden relative"
                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                      <div className="flex items-center justify-center gap-3 text-xl">
-                         <Gift className="animate-bounce" />
-                         <span>开启礼物</span>
-                      </div>
+                     <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                     <Gift className="animate-bounce group-hover:rotate-12 transition-transform text-amber-300" /> 
+                     <span className="relative z-10 text-amber-50">开启礼物</span>
                    </button>
                    
-                   <p className="text-xs text-gray-400 mt-4">
-                      * 推荐开启声音，获得最佳体验 🎵
-                   </p>
-                </div>
+                   <div className="pt-2">
+                       <button onClick={handleUnlockAdmin} className="text-white/10 text-xs hover:text-white/30 transition-colors">
+                           Designed with ❤️ ({isAdmin ? 'Editor Mode' : 'Viewer Mode'})
+                       </button>
+                   </div>
+               </div>
             </div>
         </div>
       )}
@@ -1248,7 +1254,7 @@ const App: React.FC = () => {
               <div className="flex gap-4">
                  <button 
                    onClick={() => setIsExportModalOpen(false)}
-                   className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 transition-colors"
+                   className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 transition-colors"
                  >
                    关闭
                  </button>
