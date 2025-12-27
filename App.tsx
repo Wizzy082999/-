@@ -82,7 +82,7 @@ const App: React.FC = () => {
   const [previewBgmUrl, setPreviewBgmUrl] = useState('');
 
   const currentChapter = chapters.find(c => c.id === currentChapterId) || chapters[0];
-  const displayHeroTitle = currentChapter?.heroTitle || "Merry Christmas";
+  const displayHeroTitle = currentChapter?.heroTitle || "爱你500遍";
   const displayHeroSubtitle = currentChapter?.heroSubtitle || "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️";
 
   // Calculate Navigation Indices
