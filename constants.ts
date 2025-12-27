@@ -409,12 +409,23 @@ export const INITIAL_CHAPTERS = [
         "mediaUrl": "/images/test3.jpg",
         "mediaType": "image",
         "likes": 0
+      },
+      {
+        "id": "p-1766818314747-kseo9ftwy",
+        "title": "假如生活欺骗了你",
+        "content": "宝宝，今晚回来你很难过\n因为老太婆同事的事情你跟我哭了一场\n好可怜的苗苗\n心疼你宝宝\n可能你现在看到的时候已经没有难受的感觉啦\n不过我想起来一首诗\n这次想起来再读\n比第一次在课本中学到的时候更有感触\n一切都是瞬息，一切都将会过去\n快乐的日子将会来临宝宝\n爱你",
+        "date": "2025-12-26",
+        "mediaUrl": "images/iflie.jpg",
+        "images": [
+          "images/iflie.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
       }
     ],
     "bgmUrl": "/bgm/快乐女孩.mp3"
   }
 ];
-
 // Expanded asset list with bigger/complex emojis
 export const DECORATION_ASSETS: Record<DecorationType, string> = {
   santa: '🎅🦌🛷', // Santa with reindeer and sleigh
