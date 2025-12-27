@@ -371,7 +371,7 @@ export const INITIAL_CHAPTERS = [
   {
     "id": "c-1763889537549-0.7878904477871393",
     "title": "驱动器",
-    "heroTitle": "Merry Christmas",
+    "heroTitle": "爱你500遍",
     "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
     "weather": "snow",
     "decorations": [
