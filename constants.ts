@@ -411,19 +411,6 @@ export const INITIAL_CHAPTERS = [
         "likes": 0
       },
       {
-        "id": "p-1767795959458-v7nh0v7su",
-        "title": "日子开始变得丰富多彩啦🌈",
-        "content": "🌈🌈🌈",
-        "date": "2025-12-20",
-        "mediaUrl": "images/2_7_1.jpg",
-        "images": [
-          "images/2_7_1.jpg",
-          "images/2_7_1.jpg"
-        ],
-        "mediaType": "image",
-        "likes": 0
-      },
-      {
         "id": "p-1767798323793-o3aqy8xd0",
         "title": "小鱼老师！",
         "content": "∠(°ゝ°)到！！！",
@@ -479,6 +466,19 @@ export const INITIAL_CHAPTERS = [
           "images/2_11_4.jpg",
           "images/2_11_5.jpg",
           "images/2_11_6.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767802473450-kd03cvc8m",
+        "title": "日子开始变得丰富多彩啦🌈",
+        "content": "🌈🌈🌈",
+        "date": "2025-12-20",
+        "mediaUrl": "images/2_7_1.jpg",
+        "images": [
+          "images/2_7_1.jpg",
+          "images/2_7_2.jpg"
         ],
         "mediaType": "image",
         "likes": 0
