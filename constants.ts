@@ -350,8 +350,8 @@ export const INITIAL_CHAPTERS = [
       {
         "id": "p-1763889385023-xl8g1w2sw",
         "title": "杭州东站欢迎您❤️",
-        "content": "22",
-        "date": "2025-12-26",
+        "content": "如此可爱的小女子一枚啊",
+        "date": "2025-12-18",
         "mediaUrl": "/images/pic1.jpg",
         "mediaType": "image",
         "likes": 0
@@ -399,13 +399,86 @@ export const INITIAL_CHAPTERS = [
         "id": "p-1767789415793-1hxqu0t7a",
         "title": "青城山下赵喵喵",
         "content": "偶然发现这些照片当时属于是随手一拍（虽然现在看也是属于随手一拍哈），但是再翻看的时候感觉很有活人感，虽然背景很多人，但是好像他们都是NPC，我俩是主角！如此可爱的两个人呀😊我永远爱你宝宝",
-        "date": "2026-01-07",
+        "date": "2025-12-19",
         "mediaUrl": "images/2_6_1.jpg",
         "images": [
           "images/2_6_1.jpg",
           "images/2_6_2.jpg",
           "images/2_6_3.jpg",
           "images/2_6_4.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767795959458-v7nh0v7su",
+        "title": "日子开始变得丰富多彩啦🌈",
+        "content": "🌈🌈🌈",
+        "date": "2025-12-20",
+        "mediaUrl": "images/2_7_1.jpg",
+        "images": [
+          "images/2_7_1.jpg",
+          "images/2_7_1.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767798323793-o3aqy8xd0",
+        "title": "小鱼老师！",
+        "content": "∠(°ゝ°)到！！！",
+        "date": "2025-12-21",
+        "mediaUrl": "images/2_8_1.jpg",
+        "images": [
+          "images/2_8_1.jpg",
+          "images/2_8_2.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767798634403-pp8z5ce78",
+        "title": "夜骑西湖🚴",
+        "content": "是第一次也是印象最深的一次\n好开心的一晚\n只是最后没有看到日出有点可惜啦\n不过这也使得我们第二次去夜骑！（不对是夜走）\n第二天还在开组会的办公室补了觉\n我会一辈子记得！",
+        "date": "2025-12-22",
+        "mediaUrl": "images/2_9_1.jpg",
+        "images": [
+          "images/2_9_1.jpg",
+          "images/2_9_2.jpg",
+          "images/2_9_3.jpg",
+          "images/2_9_4.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767800006663-z3uayzdf9",
+        "title": "ShangHai",
+        "content": "虽然上海是巨巨巨巨大的一座城市\n但还是很幸运在这座城市的某个角落和苗苗一起\n度过了非常多快乐的时光\n张江站的十字路口有好多小摊\n西瓜摊、淀粉肠摊、烧烤摊、卤味摊\n最喜欢夏天的西瓜摊了，每次路过我们都要买半个西瓜\n西瓜就是夏天，夏天就是西瓜\n后来西瓜摊不见了夏天也就不见了\n我们在大晚上经常会一起出门\n还是夏天的夜晚比较喜人，我们吃过好多次烧烤，拍过好几次照，喂过好几次小猫\n在夏天，我们和星星一起，都不睡觉\n后来，我找到实习啦\n第一个月狠狠赚了150块，all in买花了\n真的很喜欢每次苗苗开地铁来接我的样子\n她真的好有女人味儿，爱了\n然后哦，我们还在上海吃过好几次六合酥山店\n真不错啊，就是老板有点邋遢，像乞丐\n还有一个人留着小胡子，感觉坏坏的",
+        "date": "2025-12-23",
+        "mediaUrl": "images/2_10_1.jpg",
+        "images": [
+          "images/2_10_1.jpg",
+          "images/2_10_2.jpg",
+          "images/2_10_3.jpg",
+          "images/2_10_4.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767800984246-qv8ptzr7q",
+        "title": "西瓜摊再也没有来过了",
+        "content": "暑假就要接近尾声了\n我们一起去了苏州，苏州的妆造真不错\n虽然我最最喜欢的还是你和我在公车上的样子\n火腿肠现在也不知道在哪里打劫路人，也有可能是在行侠仗义啦\n在杭州大莲花，和苗苗一起看了我人生中第一场演唱会\n是陶喆的喂！太开心的一天\n看完演唱会后，我们又转战景德镇啦\n江西菜真的好好好好好好吃\n感觉这个暑假，我可能一生都会想念这个暑假了\n有太多日子，太多件事值得我记住一辈子了\n宝宝，我永远爱你\n可能\n一辆银灰色小车会在明年某个夜晚的蝉鸣中\n再次开到十字路口，带来一整车的夏天🍉",
+        "date": "2026-01-07",
+        "mediaUrl": "images/2_11_1.jpg",
+        "images": [
+          "images/2_11_1.jpg",
+          "images/2_11_2.jpg",
+          "images/2_11_3.jpg",
+          "images/2_11_4.jpg",
+          "images/2_11_5.jpg",
+          "images/2_11_6.jpg"
         ],
         "mediaType": "image",
         "likes": 0
