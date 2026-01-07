@@ -488,9 +488,9 @@ export const INITIAL_CHAPTERS = [
   },
   {
     "id": "c-1763889537549-0.7878904477871393",
-    "title": "驱动器",
-    "heroTitle": "爱你500遍",
-    "heroSubtitle": "收集我们珍贵的瞬间，\n一片雪花，一段回忆。 ❄️",
+    "title": "第三章：圣诞快乐🎄",
+    "heroTitle": "我住的城市从不下雪❄️",
+    "heroSubtitle": "你好吗merry merry Christmas\n想和你有更好的生活",
     "weather": "snow",
     "decorations": [
       {
@@ -502,19 +502,107 @@ export const INITIAL_CHAPTERS = [
         "visible": true
       },
       {
-        "id": "d2",
-        "type": "tree",
-        "x": 85,
-        "y": 65,
-        "scale": 2,
+        "id": "d3",
+        "type": "snowman",
+        "x": 7.552083333333333,
+        "y": 71.11111111111111,
+        "scale": 1.5,
         "visible": true
       },
       {
-        "id": "d3",
+        "id": "deco-1767802820624-nodal",
+        "type": "bell",
+        "x": 79.94791666666666,
+        "y": 29.31216931216931,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802821322-vd9me",
+        "type": "bell",
+        "x": 24.635416666666668,
+        "y": 74.28571428571429,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802833633-auf2n",
+        "type": "gift",
+        "x": 78.95833333333333,
+        "y": 52.59259259259259,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802833900-zmydn",
+        "type": "gift",
+        "x": 6.09375,
+        "y": 44.44444444444444,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802834513-ahtul",
+        "type": "sock",
+        "x": 91.51041666666667,
+        "y": 77.77777777777779,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802834670-6av78",
+        "type": "sock",
+        "x": 90.88541666666666,
+        "y": 21.48148148148148,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802836218-pcy5z",
+        "type": "bigtree",
+        "x": 80.36458333333333,
+        "y": 75.66137566137566,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802836378-nohv2",
+        "type": "bigtree",
+        "x": 17.916666666666668,
+        "y": 47.40740740740741,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802836497-wo4tl",
+        "type": "bigtree",
+        "x": 93.54166666666667,
+        "y": 48.783068783068785,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802837167-pedal",
+        "type": "bigtree",
+        "x": 18.697916666666668,
+        "y": 90.05291005291005,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802886657-wbbzn",
         "type": "snowman",
-        "x": 15,
-        "y": 75,
-        "scale": 1.5,
+        "x": 86.5625,
+        "y": 46.24338624338624,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767802887162-wngh9",
+        "type": "snowman",
+        "x": 24.635416666666668,
+        "y": 32.06349206349206,
+        "scale": 1,
         "visible": true
       }
     ],
@@ -541,9 +629,12 @@ export const INITIAL_CHAPTERS = [
         "likes": 0
       }
     ],
-    "bgmUrl": "/bgm/快乐女孩.mp3"
+    "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
   }
 ];
+
+
+
 // Expanded asset list with bigger/complex emojis
 export const DECORATION_ASSETS: Record<DecorationType, string> = {
   santa: '🎅🦌🛷', // Santa with reindeer and sleigh
