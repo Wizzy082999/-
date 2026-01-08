@@ -695,7 +695,11 @@ export const DECORATION_ASSETS: Record<DecorationType, string> = {
   train: '🚆',
   ticket: '🎫',
   tree: '🌳',
-  temple: '🛕'
+  temple: '🛕',
+  five: '5⃣',
+  zero: '0⃣',
+  cake: '🎂',
+  one: '1⃣'
 };
 
 export const DECORATION_NAMES: Record<DecorationType, string> = {
@@ -723,7 +727,11 @@ export const DECORATION_NAMES: Record<DecorationType, string> = {
   train: '火车',
   ticket: '车票',
   tree: '树',
-  temple: '寺庙'
+  temple: '寺庙',
+  five: '5',
+  zero: '0',
+  cake: '蛋糕',
+  one: '1'
 };
 
 // Helper array for the UI loop
@@ -732,5 +740,5 @@ export const AVAILABLE_DECORATIONS: DecorationType[] = [
   'cat', 'dog', 'star', 'moon', 'rainbow', 'flower', 
   'lantern', 'firecracker', 'umbrella', 'milk', 'flash', 
   'beatheart', 'popcorn','film','camera', 'train', 'ticket',
-  'tree','temple'
+  'tree', 'temple', 'five', 'zero', 'cake', 'one'
 ];
