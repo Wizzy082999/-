@@ -457,7 +457,7 @@ export const INITIAL_CHAPTERS = [
         "id": "p-1767800984246-qv8ptzr7q",
         "title": "西瓜摊再也没有来过了",
         "content": "暑假就要接近尾声了\n我们一起去了苏州，苏州的妆造真不错\n虽然我最最喜欢的还是你和我在公车上的样子\n火腿肠现在也不知道在哪里打劫路人，也有可能是在行侠仗义啦\n在杭州大莲花，和苗苗一起看了我人生中第一场演唱会\n是陶喆的喂！太开心的一天\n看完演唱会后，我们又转战景德镇啦\n江西菜真的好好好好好好吃\n感觉这个暑假，我可能一生都会想念这个暑假了\n有太多日子，太多件事值得我记住一辈子了\n宝宝，我永远爱你\n可能\n一辆银灰色小车会在明年某个夜晚的蝉鸣中\n再次开到十字路口，带来一整车的夏天🍉",
-        "date": "2026-01-07",
+        "date": "2025-12-24",
         "mediaUrl": "images/2_11_1.jpg",
         "images": [
           "images/2_11_1.jpg",
@@ -604,18 +604,17 @@ export const INITIAL_CHAPTERS = [
         "y": 32.06349206349206,
         "scale": 1,
         "visible": true
+      },
+      {
+        "id": "deco-1767841241347-sl01f",
+        "type": "santa",
+        "x": 75.0380108026526,
+        "y": 15,
+        "scale": 1,
+        "visible": true
       }
     ],
     "posts": [
-      {
-        "id": "p-1763889574742-w1qhlptir",
-        "title": "s ",
-        "content": "w ",
-        "date": "2025-11-16",
-        "mediaUrl": "/images/test3.jpg",
-        "mediaType": "image",
-        "likes": 0
-      },
       {
         "id": "p-1766818314747-kseo9ftwy",
         "title": "假如生活欺骗了你",
@@ -624,6 +623,18 @@ export const INITIAL_CHAPTERS = [
         "mediaUrl": "images/iflie.jpg",
         "images": [
           "images/iflie.jpg"
+        ],
+        "mediaType": "image",
+        "likes": 0
+      },
+      {
+        "id": "p-1767841450733-g93og8hal",
+        "title": "圣诞快乐🎉",
+        "content": "圣诞快乐宝宝，嘻嘻，其实最开始是圣诞礼物的\n我的脑子并不清晰啊，整天东想西想\n再加上行动力不强，我这个小生真是绝了啊\n如何呢？中国人不过洋节\n懂的转！",
+        "date": "2025-12-25",
+        "mediaUrl": "images/wujing.jpg",
+        "images": [
+          "images/wujing.jpg"
         ],
         "mediaType": "image",
         "likes": 0
