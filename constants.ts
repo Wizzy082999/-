@@ -639,27 +639,195 @@ export const INITIAL_CHAPTERS = [
     "weather": "starry",
     "decorations": [
       {
-        "id": "d1",
-        "type": "santa",
-        "x": 10,
-        "y": 15,
-        "scale": 1.5,
+        "id": "deco-1767840799872-oqjr7",
+        "type": "one",
+        "x": 74.84375,
+        "y": 47.83068783068783,
+        "scale": 1,
         "visible": true
       },
       {
-        "id": "d2",
-        "type": "tree",
-        "x": 85,
-        "y": 65,
-        "scale": 2,
+        "id": "deco-1767840806544-3m4a2",
+        "type": "zero",
+        "x": 78.80208333333333,
+        "y": 47.83068783068783,
+        "scale": 1,
         "visible": true
       },
       {
-        "id": "d3",
-        "type": "snowman",
-        "x": 15,
-        "y": 75,
-        "scale": 1.5,
+        "id": "deco-1767840812796-oseau",
+        "type": "cake",
+        "x": 21.354166666666664,
+        "y": 63.597883597883595,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840814176-g18bq",
+        "type": "cake",
+        "x": 74.79166666666667,
+        "y": 39.15343915343915,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840819617-ftbnw",
+        "type": "five",
+        "x": 8.645833333333334,
+        "y": 64.12698412698413,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840823187-d6x7n",
+        "type": "zero",
+        "x": 86.61458333333333,
+        "y": 47.83068783068783,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840823446-3qdei",
+        "type": "zero",
+        "x": 82.76041666666667,
+        "y": 47.83068783068783,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840823970-g5rox",
+        "type": "zero",
+        "x": 16.614583333333332,
+        "y": 64.12698412698413,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840824231-ek64d",
+        "type": "zero",
+        "x": 12.552083333333334,
+        "y": 64.12698412698413,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840831151-j0b8b",
+        "type": "beatheart",
+        "x": 8.489583333333334,
+        "y": 54.074074074074076,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840833011-xs7do",
+        "type": "beatheart",
+        "x": 91.25,
+        "y": 39.89417989417989,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840880083-tjit1",
+        "type": "cat",
+        "x": 16.71875,
+        "y": 54.285714285714285,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840880690-b71ny",
+        "type": "dog",
+        "x": 12.864583333333332,
+        "y": 54.4973544973545,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840882762-2dg82",
+        "type": "star",
+        "x": 80.57291666666667,
+        "y": 67.61904761904762,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840883257-0n1wn",
+        "type": "star",
+        "x": 7.187499999999999,
+        "y": 84.97354497354497,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840883613-i3i66",
+        "type": "star",
+        "x": 87.86458333333333,
+        "y": 24.656084656084655,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840884307-kj7q9",
+        "type": "star",
+        "x": 17.5,
+        "y": 29.417989417989414,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840906340-786kn",
+        "type": "dog",
+        "x": 84.58333333333333,
+        "y": 38.835978835978835,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840911493-1g22w",
+        "type": "cat",
+        "x": 80.57291666666667,
+        "y": 38.41269841269842,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840961812-swo58",
+        "type": "gift",
+        "x": 25.208333333333332,
+        "y": 87.5132275132275,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767840962360-pxluh",
+        "type": "gift",
+        "x": 93.125,
+        "y": 68.04232804232804,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767841018996-ba15h",
+        "type": "star",
+        "x": 80.3125,
+        "y": 87.3015873015873,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767841019970-i7kkg",
+        "type": "moon",
+        "x": 7.03125,
+        "y": 20,
+        "scale": 1,
+        "visible": true
+      },
+      {
+        "id": "deco-1767841021543-bu66o",
+        "type": "moon",
+        "x": 78.85416666666667,
+        "y": 17.037037037037038,
+        "scale": 1,
         "visible": true
       }
     ],
