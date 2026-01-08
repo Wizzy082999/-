@@ -629,10 +629,44 @@ export const INITIAL_CHAPTERS = [
         "likes": 0
       }
     ],
-    "bgmUrl": "bgm/%E5%BF%AB%E4%B9%90%E5%A5%B3%E5%AD%A9.mp3"
+    "bgmUrl": "bgm/%E5%88%9D%E9%9B%AA.mp3"
+  },
+  {
+    "id": "c-1767838308832-0.575099296845854",
+    "title": "不止500天！",
+    "heroTitle": "我将永远爱你",
+    "heroSubtitle": "喵喵汪汪forever🐶🐱\n",
+    "weather": "starry",
+    "decorations": [
+      {
+        "id": "d1",
+        "type": "santa",
+        "x": 10,
+        "y": 15,
+        "scale": 1.5,
+        "visible": true
+      },
+      {
+        "id": "d2",
+        "type": "tree",
+        "x": 85,
+        "y": 65,
+        "scale": 2,
+        "visible": true
+      },
+      {
+        "id": "d3",
+        "type": "snowman",
+        "x": 15,
+        "y": 75,
+        "scale": 1.5,
+        "visible": true
+      }
+    ],
+    "posts": [],
+    "bgmUrl": "bgm/%E5%87%A0%E5%88%86%E4%B9%8B%E5%87%A0.mp3"
   }
 ];
-
 
 
 // Expanded asset list with bigger/complex emojis
